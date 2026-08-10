@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>家族カレンダー - 予定一覧</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="calendar-container">
+        <header>
+            <h1 id="user-display">カレンダー</h1>
+            <button onclick="logout()" class="logout-button">ログアウト</button>
+        </header>
+
+        <section class="add-event-section">
+            <h3>予定を追加する</h3>
+            <input type="date" id="event-date">
+            <input type="text" id="event-plan" placeholder="予定を入力（例：買い物）">
+            <button onclick="submitEvent()">登録</button>
+        </section>
+
+        <section class="event-list-section">
+            <h3>みんなの予定</h3>
+            <div id="event-list">
+                読み込み中...
+            </div>
+        </section>
+    </div>
+
+    <script src="calendar.js"></script>
+</body>
+</html>
