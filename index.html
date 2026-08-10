@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>家族カレンダー - ログイン</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="login-container">
+        <h1>家族カレンダー</h1>
+        <p>名前を選んでログインしてください</p>
+        
+        <div class="member-list">
+            <button class="member-button" onclick="showPasswordInput('母')">母</button>
+            <button class="member-button" onclick="showPasswordInput('父')">父</button>
+            <button class="member-button" onclick="showPasswordInput('兄')">兄</button>
+            <button class="member-button" onclick="showPasswordInput('妹')">妹</button>
+        </div>
+
+        <div id="password-section" class="hidden">
+            <h2 id="selected-member-name"></h2>
+            <input type="password" id="password-input" placeholder="パスワードを入力">
+            <button onclick="login()">ログイン</button>
+            <button class="secondary-button" onclick="hidePasswordInput()">戻る</button>
+        </div>
+    </div>
+
+    <script src="auth.js"></script>
+</body>
+</html>
