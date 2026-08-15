@@ -9,7 +9,7 @@
 </head>
 <body>
     <div class="app-container">
-        <!-- サイドバー（近日中の予定とメンバー凡例） -->
+        <!-- サイドバー -->
         <aside class="sidebar">
             <div class="member-legend">
                 <h3>メンバー</h3>
@@ -24,7 +24,6 @@
                 <h3>近日中の予定</h3>
                 <div id="upcoming-list">読み込み中...</div>
             </div>
-            <!-- ログアウトボタンを削除しました -->
         </aside>
 
         <!-- メインカレンダーエリア -->
@@ -32,31 +31,34 @@
             <header class="calendar-header">
                 <div class="header-center">
                     <button class="arrow-btn" onclick="changeMonth(-1)">&#10094;</button>
-                    <h2 id="current-month-display">2026年8月</h2>
+                    <h2 id="current-month-display">年月読み込み中...</h2>
                     <button class="arrow-btn" onclick="changeMonth(1)">&#10095;</button>
                 </div>
                 <div class="header-right">
                     <button class="nav-btn" onclick="changeMonth(0)">今日</button>
-                    <button class="add-btn" onclick="toggleAddModal()">+ 予定を追加</button>
+                    <button class="add-btn" onclick="openAddModal()">+ 予定を追加</button>
                 </div>
             </header>
 
-            <!-- カレンダー本体。曜日と日付を一つのグリッドとして管理します -->
+            <!-- カレンダー本体 -->
             <div id="calendar-grid" class="calendar-grid">
-                <!-- JavaScriptで曜日(day-header)と日付(calendar-day)を挿入します -->
+                <!-- JavaScriptで内容を生成 -->
             </div>
         </main>
     </div>
 
-    <!-- 予定追加用のモーダル -->
+    <!-- 予定追加用のモーダル（初期は非表示） -->
     <div id="add-modal" class="modal hidden">
         <div class="modal-content">
             <h3>予定を追加</h3>
-            <input type="date" id="event-date">
-            <input type="text" id="event-plan" placeholder="予定の内容">
+            <div class="modal-body">
+                <label for="event-date">選択した日付:</label>
+                <input type="date" id="event-date">
+                <input type="text" id="event-plan" placeholder="予定の内容（例：買い物）">
+            </div>
             <div class="modal-buttons">
                 <button onclick="submitEvent()" class="primary-button">登録</button>
-                <button onclick="toggleAddModal()" class="secondary-button">キャンセル</button>
+                <button onclick="closeAddModal()" class="secondary-button">キャンセル</button>
             </div>
         </div>
     </div>
