@@ -1,161 +1,158 @@
-/* 基本設定 */
+:root {
+    --bg-color: #f4f7f6;
+    --card-bg: #ffffff;
+    --primary-color: #007bff;
+    --border-color: #e0e0e0;
+    --text-main: #333333;
+    --text-sub: #666666;
+    
+    /* メンバーカラー */
+    --color-mama: #ffb6c1; /* ピンク */
+    --color-papa: #98fb98; /* 薄緑 */
+    --color-brother: #add8e6; /* 水色 */
+    --color-sister: #fffacd; /* 薄黄 */
+}
+
 body {
-    font-family: "Helvetica Neue", Arial, "Hiragino Kaku Gothic ProN", "Hiragino Sans", Meiryo, sans-serif;
-    background-color: #f4f7f6;
-    display: flex;
-    justify-content: center;
-    align-items: flex-start;
-    min-height: 100vh;
+    font-family: "Helvetica Neue", Arial, sans-serif;
+    background-color: var(--bg-color);
     margin: 0;
-    padding-top: 20px;
+    color: var(--text-main);
 }
 
-.login-container, .calendar-container {
-    background-color: #ffffff;
-    padding: 2rem;
-    border-radius: 8px;
-    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+/* ログイン画面の調整 (画像2対応) */
+.login-container {
+    background-color: var(--card-bg);
+    padding: 40px;
+    border-radius: 12px;
+    box-shadow: 0 10px 25px rgba(0,0,0,0.05);
     text-align: center;
-    width: 90%;
-    max-width: 500px;
+    width: 380px;
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
 }
 
-/* アイコンのスタイル */
-.page-icon {
-    width: 60px;
-    height: 60px;
-    object-fit: contain;
-    margin-bottom: 10px;
-}
-
-h1, h2, h3 {
-    color: #333;
-}
-
-/* メンバー選択ボタン */
-.member-list {
-    display: flex;
-    flex-direction: column;
-    gap: 1rem;
-}
+.main-title { font-size: 1.8rem; margin: 10px 0; font-weight: bold; }
+.sub-title { color: var(--text-sub); margin-bottom: 25px; }
 
 .member-button {
-    padding: 1rem;
-    font-size: 1.1rem;
+    display: block;
+    width: 100%;
+    padding: 15px;
+    margin-bottom: 12px;
     border: 1px solid #ddd;
-    border-radius: 5px;
+    border-radius: 8px;
     background-color: #fff;
-    cursor: pointer;
-    transition: background-color 0.2s;
-}
-
-.member-button:hover {
-    background-color: #e9ecef;
-}
-
-/* 共通ボタン・入力欄 */
-input[type="password"], input[type="text"], input[type="date"] {
-    width: 100%;
-    padding: 0.8rem;
-    margin-bottom: 1rem;
-    border: 1px solid #ccc;
-    border-radius: 4px;
-    box-sizing: border-box;
-}
-
-button {
-    padding: 0.8rem 1.5rem;
     font-size: 1rem;
-    background-color: #007bff;
-    color: white;
-    border: none;
-    border-radius: 4px;
+    font-weight: bold;
+    color: #333; /* 文字色をはっきりさせる */
     cursor: pointer;
-    width: 100%;
+    transition: all 0.2s;
 }
 
-button:hover {
-    background-color: #0056b3;
+.member-button:hover { background-color: #f8f9fa; border-color: #bbb; }
+
+/* カレンダー全体のレイアウト (画像1対応) */
+.app-container {
+    display: flex;
+    height: 100vh;
+    overflow: hidden;
 }
 
-/* カレンダー画面特有のデザイン */
-header {
+.sidebar {
+    width: 250px;
+    background-color: #fff;
+    border-right: 1px solid var(--border-color);
+    padding: 20px;
+    display: flex;
+    flex-direction: column;
+}
+
+.calendar-main {
+    flex-grow: 1;
+    display: flex;
+    flex-direction: column;
+    background-color: #fff;
+}
+
+/* カレンダーヘッダー */
+.calendar-header {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    margin-bottom: 2rem;
-    border-bottom: 2px solid #eee;
-    padding-bottom: 1rem;
+    padding: 15px 25px;
+    border-bottom: 1px solid var(--border-color);
 }
 
-.header-top {
-    display: flex;
-    align-items: center;
-    gap: 10px;
+.header-left { display: flex; align-items: center; gap: 10px; }
+.header-icon { width: 32px; height: 32px; }
+
+.nav-btn, .add-btn {
+    padding: 8px 15px;
+    border: 1px solid var(--border-color);
+    background: #fff;
+    border-radius: 5px;
+    cursor: pointer;
+    margin-left: 5px;
 }
 
-.header-top .page-icon {
-    width: 40px;
-    height: 40px;
-    margin-bottom: 0;
-}
+.add-btn { background-color: var(--primary-color); color: #fff; border: none; font-weight: bold; }
 
-header h1 {
-    font-size: 1.2rem;
-    margin: 0;
-}
-
-.logout-button {
-    width: auto;
-    background-color: #dc3545;
-    padding: 0.5rem 1rem;
-}
-
-.logout-button:hover {
-    background-color: #c82333;
-}
-
-.add-event-section {
-    background-color: #f8f9fa;
-    padding: 1rem;
-    border-radius: 8px;
-    margin-bottom: 2rem;
-}
-
-.event-list-section {
-    text-align: left;
-}
-
-.event-item {
-    display: flex;
-    gap: 10px;
-    padding: 0.8rem;
-    border-bottom: 1px solid #eee;
-    align-items: center;
-}
-
-.event-date {
-    font-weight: bold;
-    color: #007bff;
-    min-width: 50px;
-}
-
-.event-name {
-    background-color: #e2e3e5;
-    padding: 2px 6px;
-    border-radius: 4px;
-    font-size: 0.8rem;
-}
-
-.event-plan {
+/* カレンダーグリッド */
+.calendar-grid {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
     flex-grow: 1;
 }
 
-/* 非表示設定 */
-.hidden {
-    display: none;
+.day-header {
+    padding: 10px;
+    text-align: center;
+    font-weight: bold;
+    border-bottom: 1px solid var(--border-color);
+    border-right: 1px solid var(--border-color);
 }
-.secondary-button {
-    background-color: #6c757d;
-    margin-top: 0.5rem;
+
+.sun { color: #d9534f; }
+.sat { color: #0275d8; }
+
+.calendar-days-contents {
+    display: contents; /* 子要素をグリッドに直接配置 */
 }
+
+.calendar-day {
+    min-height: 100px;
+    border-right: 1px solid var(--border-color);
+    border-bottom: 1px solid var(--border-color);
+    padding: 5px;
+}
+
+.day-number { font-size: 0.9rem; margin-bottom: 5px; display: block; }
+
+/* 予定のラベル */
+.event-label {
+    font-size: 0.75rem;
+    padding: 3px 6px;
+    border-radius: 4px;
+    margin-bottom: 2px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    display: block;
+}
+
+.color-mama { background-color: var(--color-mama); }
+.color-papa { background-color: var(--color-papa); }
+.color-brother { background-color: var(--color-brother); }
+.color-sister { background-color: var(--color-sister); }
+
+/* モーダル */
+.modal {
+    position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+    background: rgba(0,0,0,0.5); display: flex; justify-content: center; align-items: center;
+}
+.modal-content { background: #fff; padding: 25px; border-radius: 10px; width: 300px; }
+
+.hidden { display: none; }
