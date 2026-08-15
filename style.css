@@ -2,13 +2,9 @@
     --bg-color: #f4f7f6;
     --card-bg: #ffffff;
     --primary-color: #007bff;
-    --primary-hover: #0056b3;
-    --secondary-color: #6c757d;
     --border-color: #e0e0e0;
     --text-main: #333333;
     --text-sub: #666666;
-    
-    /* メンバーカラー */
     --color-mama: #ffb6c1;
     --color-papa: #98fb98;
     --color-brother: #add8e6;
@@ -25,7 +21,7 @@ body, html {
     background-color: var(--bg-color);
 }
 
-/* ログイン画面の配置（完全中央） */
+/* ログインページの設定 */
 body.login-page {
     display: flex;
     justify-content: center;
@@ -41,7 +37,6 @@ body.login-page {
     width: 380px;
 }
 
-/* アイコンサイズ固定 */
 .page-icon {
     width: 80px;
     height: 80px;
@@ -49,76 +44,18 @@ body.login-page {
     margin-bottom: 20px;
 }
 
-.main-title { font-size: 1.8rem; margin: 10px 0; font-weight: bold; }
-.sub-title { color: var(--text-sub); margin-bottom: 25px; font-size: 0.9rem; }
-
-/* メンバー選択ボタン（以前のスタイル） */
-.member-list {
-    display: flex;
-    flex-direction: column;
-    gap: 12px;
-}
-
 .member-button {
-    padding: 1rem;
-    font-size: 1.1rem;
-    border: 1px solid #ddd;
-    border-radius: 8px;
-    background-color: #fff;
-    color: #333;
-    cursor: pointer;
-    transition: background-color 0.2s;
-    font-weight: bold;
-}
-
-.member-button:hover {
-    background-color: #f8f9fa;
-}
-
-/* 入力欄とボタン（以前のスタイルに復元） */
-#password-input {
-    width: 100%;
-    padding: 0.8rem;
-    margin-bottom: 1rem;
-    border: 1px solid #ccc;
-    border-radius: 4px;
-    box-sizing: border-box;
+    display: block; width: 100%; padding: 15px; margin-bottom: 10px;
+    border: 1px solid #ddd; border-radius: 8px; background: #fff;
+    font-weight: bold; cursor: pointer; font-size: 1.1rem;
 }
 
 .primary-button {
-    padding: 0.8rem 1.5rem;
-    font-size: 1rem;
-    background-color: var(--primary-color);
-    color: white;
-    border: none;
-    border-radius: 4px;
-    cursor: pointer;
-    width: 100%;
-    font-weight: bold;
+    padding: 0.8rem; background-color: var(--primary-color);
+    color: white; border: none; border-radius: 4px; width: 100%; cursor: pointer;
 }
 
-.primary-button:hover {
-    background-color: var(--primary-hover);
-}
-
-.secondary-button {
-    background-color: var(--secondary-color);
-    color: white;
-    border: none;
-    padding: 0.8rem;
-    width: 100%;
-    border-radius: 4px;
-    cursor: pointer;
-    margin-top: 0.5rem;
-}
-
-.status-message {
-    font-size: 0.85rem;
-    margin-bottom: 10px;
-    min-height: 1.2rem;
-}
-
-/* カレンダー画面のレイアウト */
+/* カレンダー画面のレイアウト修正 */
 .app-container {
     display: flex;
     width: 100vw;
@@ -126,7 +63,7 @@ body.login-page {
 }
 
 .sidebar {
-    width: 250px;
+    width: 200px;
     background-color: #fff;
     border-right: 1px solid var(--border-color);
     padding: 20px;
@@ -141,33 +78,51 @@ body.login-page {
     background-color: #fff;
 }
 
+/* ヘッダーの中央に矢印と年月を配置 */
 .calendar-header {
-    padding: 10px 20px;
+    padding: 15px 20px;
     display: flex;
-    justify-content: space-between;
+    justify-content: center; /* 中央に寄せる */
     align-items: center;
     border-bottom: 1px solid var(--border-color);
+    position: relative;
 }
 
-.header-left { display: flex; align-items: center; gap: 10px; }
-.header-icon { width: 30px; height: 30px; }
+.header-center {
+    display: flex;
+    align-items: center;
+    gap: 20px;
+}
 
-.nav-btn, .add-btn {
-    padding: 6px 12px;
-    border: 1px solid var(--border-color);
-    background: #fff;
-    border-radius: 4px;
+.header-center h2 {
+    margin: 0;
+    font-size: 1.5rem;
+    min-width: 150px;
+    text-align: center;
+}
+
+.arrow-btn {
+    background: none;
+    border: none;
+    font-size: 1.5rem;
     cursor: pointer;
+    color: var(--primary-color);
+    padding: 5px 10px;
 }
 
-.add-btn { background: var(--primary-color); color: #fff; border: none; font-weight: bold; }
+.header-right {
+    position: absolute;
+    right: 20px;
+    display: flex;
+    gap: 10px;
+}
 
-/* カレンダーグリッド */
+/* カレンダーグリッドの修正（横7列を厳守） */
 .calendar-grid {
     display: grid;
     grid-template-columns: repeat(7, 1fr);
-    grid-template-rows: auto 1fr;
     flex-grow: 1;
+    overflow-y: auto;
 }
 
 .day-header {
@@ -176,21 +131,37 @@ body.login-page {
     font-weight: bold;
     border-bottom: 1px solid var(--border-color);
     border-right: 1px solid var(--border-color);
+    background-color: #f9f9f9;
 }
 
+.sun { color: #d9534f; }
+.sat { color: #0275d8; }
+
 .calendar-day {
+    min-height: 120px;
     border-right: 1px solid var(--border-color);
     border-bottom: 1px solid var(--border-color);
     padding: 5px;
-    min-height: 100px;
+    background-color: #fff;
 }
 
-.day-number { font-size: 0.8rem; color: #777; }
+.day-number {
+    font-size: 0.8rem;
+    color: #888;
+    margin-bottom: 5px;
+    display: block;
+}
 
 /* 予定ラベル */
 .event-label {
-    font-size: 0.7rem; padding: 2px 4px; border-radius: 3px;
-    margin-bottom: 2px; display: block; overflow: hidden; text-overflow: ellipsis;
+    font-size: 0.75rem;
+    padding: 2px 4px;
+    border-radius: 3px;
+    margin-bottom: 2px;
+    display: block;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
 }
 
 .color-mama { background-color: var(--color-mama); }
@@ -200,7 +171,8 @@ body.login-page {
 
 .hidden { display: none; }
 
-.logout-button {
-    margin-top: auto; padding: 10px; background: #eee; border: none;
-    border-radius: 4px; cursor: pointer;
+.modal {
+    position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+    background: rgba(0,0,0,0.5); display: flex; justify-content: center; align-items: center;
 }
+.modal-content { background: #fff; padding: 25px; border-radius: 10px; width: 300px; }
