@@ -10,8 +10,8 @@
 <body>
     <div class="login-container">
         <img src="calendaricon.png" alt="icon" class="page-icon">
-        <h1>家族カレンダー</h1>
-        <p>名前を選んでログインしてください</p>
+        <h1 class="main-title">家族カレンダー</h1>
+        <p class="sub-title">名前を選んでログインしてください</p>
         
         <div class="member-list">
             <button class="member-button" onclick="showPasswordInput('母')">母</button>
@@ -23,7 +23,7 @@
         <div id="password-section" class="hidden">
             <h2 id="selected-member-name"></h2>
             <input type="password" id="password-input" placeholder="パスワードを入力">
-            <button onclick="login()">ログイン</button>
+            <button class="primary-button" onclick="login()">ログイン</button>
             <button class="secondary-button" onclick="hidePasswordInput()">戻る</button>
         </div>
     </div>
