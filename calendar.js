@@ -15,22 +15,33 @@ async function renderCalendar() {
     const month = currentViewDate.getMonth();
     document.getElementById('current-month-display').textContent = `${year}年${month + 1}月`;
     
-    const calendarDays = document.getElementById('calendar-days');
-    calendarDays.innerHTML = "";
+    const grid = document.getElementById('calendar-grid');
+    grid.innerHTML = "";
+
+    // 曜日ヘッダーの作成
+    const daysOfWeek = ['日', '月', '火', '水', '木', '金', '土'];
+    daysOfWeek.forEach((day, index) => {
+        const header = document.createElement('div');
+        header.className = 'day-header';
+        if (index === 0) header.classList.add('sun');
+        if (index === 6) header.classList.add('sat');
+        header.textContent = day;
+        grid.appendChild(header);
+    });
 
     const firstDay = new Date(year, month, 1).getDay();
     const lastDate = new Date(year, month + 1, 0).getDate();
 
     const events = await fetchEvents();
 
-    // 空白セル
+    // 1日までを空白で埋める
     for (let i = 0; i < firstDay; i++) {
         const emptyCell = document.createElement('div');
         emptyCell.className = 'calendar-day empty';
-        calendarDays.appendChild(emptyCell);
+        grid.appendChild(emptyCell);
     }
 
-    // 日付セル
+    // 日付セルの生成
     for (let date = 1; date <= lastDate; date++) {
         const cell = document.createElement('div');
         cell.className = 'calendar-day';
@@ -44,7 +55,6 @@ async function renderCalendar() {
         
         const dayEvents = events.filter(e => {
             const eDate = new Date(e.date);
-            // 日付文字列を比較するために変換
             const compareDate = `${eDate.getFullYear()}-${String(eDate.getMonth() + 1).padStart(2, '0')}-${String(eDate.getDate()).padStart(2, '0')}`;
             return compareDate === dateStr;
         });
@@ -56,7 +66,7 @@ async function renderCalendar() {
             cell.appendChild(label);
         });
 
-        calendarDays.appendChild(cell);
+        grid.appendChild(cell);
     }
     
     updateUpcomingEvents(events);
@@ -113,14 +123,9 @@ function updateUpcomingEvents(events) {
     list.innerHTML = upcoming.length ? "" : "予定なし";
     upcoming.forEach(e => {
         const div = document.createElement('div');
-        div.className = "event-item-sidebar";
+        div.style.fontSize = "0.8rem";
         div.style.marginBottom = "8px";
         div.innerHTML = `<small>${e.date.split('T')[0].substring(5)}</small> <strong>${e.plan}</strong>`;
         list.appendChild(div);
     });
-}
-
-function logout() {
-    localStorage.removeItem('family_calendar_user');
-    window.location.href = "index.html";
 }
