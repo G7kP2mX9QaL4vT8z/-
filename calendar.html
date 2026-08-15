@@ -1,101 +1,37 @@
-const GAS_WEB_APP_URL = "https://script.google.com/macros/s/AKfycbwErNALMT0pjSzV69ZQ02sMHTp7wlLYzTgy4g9IpMvapJUcbSbaVOT1rFUrk1Tu9zwvzQ/exec";
-const currentUser = localStorage.getItem('family_calendar_user');
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>家族カレンダー - 予定一覧</title>
+    <link rel="icon" href="calendaricon.png" type="image/png">
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="calendar-container">
+        <header>
+            <div class="header-top">
+                <img src="calendaricon.png" alt="icon" class="page-icon">
+                <h1 id="user-display">カレンダー</h1>
+            </div>
+            <button onclick="logout()" class="logout-button">ログアウト</button>
+        </header>
 
-// ページ読み込み時の処理
-window.onload = function() {
-    // ログインチェック
-    if (!currentUser) {
-        alert("ログインが必要です。");
-        window.location.href = "index.html";
-        return;
-    }
+        <section class="add-event-section">
+            <h3>予定を追加する</h3>
+            <input type="date" id="event-date">
+            <input type="text" id="event-plan" placeholder="予定を入力（例：買い物）">
+            <button onclick="submitEvent()">登録</button>
+        </section>
 
-    // ユーザー名表示
-    document.getElementById('user-display').textContent = currentUser + " のカレンダー";
+        <section class="event-list-section">
+            <h3>みんなの予定</h3>
+            <div id="event-list">
+                読み込み中...
+            </div>
+        </section>
+    </div>
 
-    // 今日の日付を初期値にセット
-    const today = new Date().toISOString().split('T')[0];
-    document.getElementById('event-date').value = today;
-
-    // 予定一覧を取得
-    loadEvents();
-};
-
-// 予定一覧を取得して表示する
-async function loadEvents() {
-    const eventListDiv = document.getElementById('event-list');
-    eventListDiv.innerHTML = "読み込み中...";
-
-    try {
-        const response = await fetch(GAS_WEB_APP_URL, {
-            method: "POST",
-            body: JSON.stringify({ action: "getEvents" })
-        });
-        const events = await response.json();
-
-        if (events.length === 0) {
-            eventListDiv.innerHTML = "<p>予定はありません。</p>";
-            return;
-        }
-
-        // 日付順に並び替え
-        events.sort((a, b) => new Date(a.date) - new Date(b.date));
-
-        eventListDiv.innerHTML = "";
-        events.forEach(event => {
-            const dateObj = new Date(event.date);
-            const dateStr = `${dateObj.getMonth() + 1}/${dateObj.getDate()}`;
-            
-            const eventItem = document.createElement('div');
-            eventItem.className = 'event-item';
-            eventItem.innerHTML = `
-                <span class="event-date">${dateStr}</span>
-                <span class="event-name">${event.name}</span>
-                <span class="event-plan">${event.plan}</span>
-            `;
-            eventListDiv.appendChild(eventItem);
-        });
-    } catch (error) {
-        console.error("エラー:", error);
-        eventListDiv.innerHTML = "予定の取得に失敗しました。";
-    }
-}
-
-// 新しい予定を登録する
-async function submitEvent() {
-    const date = document.getElementById('event-date').value;
-    const plan = document.getElementById('event-plan').value;
-
-    if (!date || !plan) {
-        alert("日付と予定を入力してください。");
-        return;
-    }
-
-    try {
-        const response = await fetch(GAS_WEB_APP_URL, {
-            method: "POST",
-            body: JSON.stringify({
-                action: "addEvent",
-                username: currentUser,
-                date: date,
-                plan: plan
-            })
-        });
-
-        const result = await response.json();
-        if (result.status === 'success') {
-            alert("登録しました！");
-            document.getElementById('event-plan').value = ""; // 入力欄を空にする
-            loadEvents(); // 一覧を再読み込み
-        }
-    } catch (error) {
-        console.error("エラー:", error);
-        alert("登録に失敗しました。");
-    }
-}
-
-// ログアウト
-function logout() {
-    localStorage.removeItem('family_calendar_user');
-    window.location.href = "index.html";
-}
+    <script src="calendar.js"></script>
+</body>
+</html>
