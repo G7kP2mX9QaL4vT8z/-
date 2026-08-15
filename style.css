@@ -13,52 +13,121 @@
     --color-sister: #fffacd; /* 薄黄 */
 }
 
+/* 全体設定 */
 body {
     font-family: "Helvetica Neue", Arial, sans-serif;
     background-color: var(--bg-color);
     margin: 0;
     color: var(--text-main);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh;
 }
 
-/* ログイン画面の調整 (画像2対応) */
+/* ログイン画面のコンテナ (画像2対応) */
 .login-container {
     background-color: var(--card-bg);
     padding: 40px;
     border-radius: 12px;
     box-shadow: 0 10px 25px rgba(0,0,0,0.05);
     text-align: center;
-    width: 380px;
-    position: absolute;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%);
+    width: 90%;
+    max-width: 380px; /* 横幅を制限 */
+    box-sizing: border-box;
 }
 
-.main-title { font-size: 1.8rem; margin: 10px 0; font-weight: bold; }
-.sub-title { color: var(--text-sub); margin-bottom: 25px; }
+/* アイコンのサイズを厳密に固定 */
+.page-icon {
+    width: 80px !important;  /* サイズを80pxに固定 */
+    height: 80px !important;
+    max-width: 100%;
+    object-fit: contain;
+    margin: 0 auto 20px auto;
+    display: block;
+}
+
+.main-title { 
+    font-size: 1.5rem; 
+    margin: 10px 0; 
+    font-weight: bold; 
+    color: #333;
+}
+
+.sub-title { 
+    color: var(--text-sub); 
+    margin-bottom: 25px; 
+    font-size: 0.9rem;
+}
+
+/* メンバー選択ボタン */
+.member-list {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
 
 .member-button {
     display: block;
     width: 100%;
     padding: 15px;
-    margin-bottom: 12px;
     border: 1px solid #ddd;
     border-radius: 8px;
     background-color: #fff;
     font-size: 1rem;
     font-weight: bold;
-    color: #333; /* 文字色をはっきりさせる */
+    color: #333;
     cursor: pointer;
     transition: all 0.2s;
 }
 
-.member-button:hover { background-color: #f8f9fa; border-color: #bbb; }
+.member-button:hover { 
+    background-color: #f8f9fa; 
+    border-color: #bbb; 
+}
 
-/* カレンダー全体のレイアウト (画像1対応) */
+/* パスワードセクション */
+#password-section {
+    margin-top: 20px;
+}
+
+#password-input {
+    width: 100%;
+    padding: 12px;
+    margin-bottom: 15px;
+    border: 1px solid #ddd;
+    border-radius: 6px;
+    box-sizing: border-box;
+}
+
+.primary-button {
+    background-color: var(--primary-color);
+    color: white;
+    border: none;
+    padding: 12px;
+    width: 100%;
+    border-radius: 6px;
+    cursor: pointer;
+    font-weight: bold;
+}
+
+.secondary-button {
+    background-color: #6c757d;
+    color: white;
+    border: none;
+    padding: 10px;
+    width: 100%;
+    border-radius: 6px;
+    cursor: pointer;
+    margin-top: 10px;
+}
+
+/* カレンダー画面のレイアウト */
 .app-container {
     display: flex;
+    width: 100%;
     height: 100vh;
-    overflow: hidden;
+    align-items: stretch;
 }
 
 .sidebar {
@@ -77,7 +146,6 @@ body {
     background-color: #fff;
 }
 
-/* カレンダーヘッダー */
 .calendar-header {
     display: flex;
     justify-content: space-between;
@@ -87,7 +155,7 @@ body {
 }
 
 .header-left { display: flex; align-items: center; gap: 10px; }
-.header-icon { width: 32px; height: 32px; }
+.header-icon { width: 32px; height: 32px; object-fit: contain; }
 
 .nav-btn, .add-btn {
     padding: 8px 15px;
@@ -118,10 +186,6 @@ body {
 .sun { color: #d9534f; }
 .sat { color: #0275d8; }
 
-.calendar-days-contents {
-    display: contents; /* 子要素をグリッドに直接配置 */
-}
-
 .calendar-day {
     min-height: 100px;
     border-right: 1px solid var(--border-color);
@@ -148,7 +212,6 @@ body {
 .color-brother { background-color: var(--color-brother); }
 .color-sister { background-color: var(--color-sister); }
 
-/* モーダル */
 .modal {
     position: fixed; top: 0; left: 0; width: 100%; height: 100%;
     background: rgba(0,0,0,0.5); display: flex; justify-content: center; align-items: center;
