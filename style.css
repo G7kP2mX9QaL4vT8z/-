@@ -2,6 +2,8 @@
     --bg-color: #f4f7f6;
     --card-bg: #ffffff;
     --primary-color: #007bff;
+    --primary-hover: #0056b3;
+    --secondary-color: #6c757d;
     --border-color: #e0e0e0;
     --text-main: #333333;
     --text-sub: #666666;
@@ -44,18 +46,61 @@ body.login-page {
     margin-bottom: 20px;
 }
 
+.main-title { font-size: 1.8rem; margin: 10px 0; font-weight: bold; }
+.sub-title { color: var(--text-sub); margin-bottom: 25px; font-size: 0.9rem; }
+
+/* ボタンの共通スタイル */
+.member-button, .primary-button {
+    display: block;
+    width: 100%;
+    padding: 12px;
+    margin-bottom: 10px;
+    border-radius: 8px;
+    font-size: 1.1rem;
+    font-weight: bold;
+    cursor: pointer;
+    transition: background-color 0.2s;
+    text-align: center;
+}
+
 .member-button {
-    display: block; width: 100%; padding: 15px; margin-bottom: 10px;
-    border: 1px solid #ddd; border-radius: 8px; background: #fff;
-    font-weight: bold; cursor: pointer; font-size: 1.1rem;
+    border: 1px solid #ddd;
+    background-color: #fff;
+    color: #333;
 }
 
 .primary-button {
-    padding: 0.8rem; background-color: var(--primary-color);
-    color: white; border: none; border-radius: 4px; width: 100%; cursor: pointer;
+    background-color: var(--primary-color);
+    color: white;
+    border: none;
+    margin-top: 10px;
 }
 
-/* カレンダー画面のレイアウト修正 */
+.primary-button:hover {
+    background-color: var(--primary-hover);
+}
+
+.secondary-button {
+    background-color: var(--secondary-color);
+    color: white;
+    border: none;
+    padding: 10px;
+    width: 100%;
+    border-radius: 4px;
+    cursor: pointer;
+    margin-top: 5px;
+}
+
+/* パスワード入力 */
+#password-input {
+    width: 100%;
+    padding: 12px;
+    margin-bottom: 10px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+}
+
+/* カレンダー画面のレイアウト */
 .app-container {
     display: flex;
     width: 100vw;
@@ -78,11 +123,10 @@ body.login-page {
     background-color: #fff;
 }
 
-/* ヘッダーの中央に矢印と年月を配置 */
 .calendar-header {
     padding: 15px 20px;
     display: flex;
-    justify-content: center; /* 中央に寄せる */
+    justify-content: center;
     align-items: center;
     border-bottom: 1px solid var(--border-color);
     position: relative;
@@ -95,29 +139,25 @@ body.login-page {
 }
 
 .header-center h2 {
-    margin: 0;
-    font-size: 1.5rem;
-    min-width: 150px;
-    text-align: center;
+    margin: 0; font-size: 1.5rem; text-align: center;
 }
 
 .arrow-btn {
-    background: none;
-    border: none;
-    font-size: 1.5rem;
-    cursor: pointer;
-    color: var(--primary-color);
-    padding: 5px 10px;
+    background: none; border: none; font-size: 1.5rem;
+    cursor: pointer; color: var(--primary-color);
 }
 
 .header-right {
-    position: absolute;
-    right: 20px;
-    display: flex;
-    gap: 10px;
+    position: absolute; right: 20px; display: flex; gap: 10px;
 }
 
-/* カレンダーグリッドの修正（横7列を厳守） */
+.nav-btn, .add-btn {
+    padding: 8px 15px; border: 1px solid var(--border-color);
+    background: #fff; border-radius: 4px; cursor: pointer;
+}
+.add-btn { background: var(--primary-color); color: #fff; border: none; font-weight: bold; }
+
+/* カレンダーグリッド */
 .calendar-grid {
     display: grid;
     grid-template-columns: repeat(7, 1fr);
@@ -126,9 +166,7 @@ body.login-page {
 }
 
 .day-header {
-    padding: 10px;
-    text-align: center;
-    font-weight: bold;
+    padding: 10px; text-align: center; font-weight: bold;
     border-bottom: 1px solid var(--border-color);
     border-right: 1px solid var(--border-color);
     background-color: #f9f9f9;
@@ -138,30 +176,26 @@ body.login-page {
 .sat { color: #0275d8; }
 
 .calendar-day {
-    min-height: 120px;
+    min-height: 100px;
     border-right: 1px solid var(--border-color);
     border-bottom: 1px solid var(--border-color);
     padding: 5px;
     background-color: #fff;
+    cursor: pointer;
 }
 
-.day-number {
-    font-size: 0.8rem;
-    color: #888;
-    margin-bottom: 5px;
-    display: block;
+/* 日付選択時の色 */
+.calendar-day.selected {
+    background-color: #e8f0fe;
 }
+
+.day-number { font-size: 0.8rem; color: #888; }
 
 /* 予定ラベル */
 .event-label {
-    font-size: 0.75rem;
-    padding: 2px 4px;
-    border-radius: 3px;
-    margin-bottom: 2px;
-    display: block;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
+    font-size: 0.75rem; padding: 2px 4px; border-radius: 3px;
+    margin-bottom: 2px; display: block; overflow: hidden;
+    text-overflow: ellipsis; white-space: nowrap;
 }
 
 .color-mama { background-color: var(--color-mama); }
@@ -169,10 +203,15 @@ body.login-page {
 .color-brother { background-color: var(--color-brother); }
 .color-sister { background-color: var(--color-sister); }
 
-.hidden { display: none; }
-
+/* モーダル */
 .modal {
     position: fixed; top: 0; left: 0; width: 100%; height: 100%;
     background: rgba(0,0,0,0.5); display: flex; justify-content: center; align-items: center;
+    z-index: 1000;
 }
-.modal-content { background: #fff; padding: 25px; border-radius: 10px; width: 300px; }
+.modal-content {
+    background: #fff; padding: 25px; border-radius: 12px;
+    width: 320px; text-align: center; box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+}
+
+.hidden { display: none; }
