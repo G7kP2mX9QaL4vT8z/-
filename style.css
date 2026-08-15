@@ -5,27 +5,31 @@
     --border-color: #e0e0e0;
     --text-main: #333333;
     --text-sub: #666666;
-    
-    /* メンバーカラー */
-    --color-mama: #ffb6c1; /* ピンク */
-    --color-papa: #98fb98; /* 薄緑 */
-    --color-brother: #add8e6; /* 水色 */
-    --color-sister: #fffacd; /* 薄黄 */
+    --color-mama: #ffb6c1;
+    --color-papa: #98fb98;
+    --color-brother: #add8e6;
+    --color-sister: #fffacd;
 }
 
 /* 全体設定 */
-body {
+* { box-sizing: border-box; }
+
+body, html {
+    margin: 0;
+    padding: 0;
+    height: 100%;
     font-family: "Helvetica Neue", Arial, sans-serif;
     background-color: var(--bg-color);
-    margin: 0;
     color: var(--text-main);
+}
+
+/* ログイン画面 (中央配置) */
+body.login-page {
     display: flex;
     justify-content: center;
     align-items: center;
-    min-height: 100vh;
 }
 
-/* ログイン画面のコンテナ (画像2対応) */
 .login-container {
     background-color: var(--card-bg);
     padding: 40px;
@@ -33,146 +37,87 @@ body {
     box-shadow: 0 10px 25px rgba(0,0,0,0.05);
     text-align: center;
     width: 90%;
-    max-width: 380px; /* 横幅を制限 */
-    box-sizing: border-box;
+    max-width: 380px;
 }
 
-/* アイコンのサイズを厳密に固定 */
 .page-icon {
-    width: 80px !important;  /* サイズを80pxに固定 */
-    height: 80px !important;
-    max-width: 100%;
+    width: 80px;
+    height: 80px;
     object-fit: contain;
-    margin: 0 auto 20px auto;
-    display: block;
+    margin-bottom: 20px;
 }
 
-.main-title { 
-    font-size: 1.5rem; 
-    margin: 10px 0; 
-    font-weight: bold; 
-    color: #333;
-}
-
-.sub-title { 
-    color: var(--text-sub); 
-    margin-bottom: 25px; 
-    font-size: 0.9rem;
-}
-
-/* メンバー選択ボタン */
-.member-list {
-    display: flex;
-    flex-direction: column;
-    gap: 10px;
+.status-message {
+    font-size: 0.85rem;
+    margin-bottom: 10px;
+    min-height: 1.2rem;
 }
 
 .member-button {
-    display: block;
-    width: 100%;
-    padding: 15px;
-    border: 1px solid #ddd;
-    border-radius: 8px;
-    background-color: #fff;
-    font-size: 1rem;
-    font-weight: bold;
-    color: #333;
-    cursor: pointer;
-    transition: all 0.2s;
+    display: block; width: 100%; padding: 15px; margin-bottom: 10px;
+    border: 1px solid #ddd; border-radius: 8px; background: #fff;
+    font-weight: bold; cursor: pointer;
 }
 
-.member-button:hover { 
-    background-color: #f8f9fa; 
-    border-color: #bbb; 
-}
-
-/* パスワードセクション */
-#password-section {
-    margin-top: 20px;
-}
-
-#password-input {
-    width: 100%;
-    padding: 12px;
-    margin-bottom: 15px;
-    border: 1px solid #ddd;
-    border-radius: 6px;
-    box-sizing: border-box;
-}
-
-.primary-button {
-    background-color: var(--primary-color);
-    color: white;
-    border: none;
-    padding: 12px;
-    width: 100%;
-    border-radius: 6px;
-    cursor: pointer;
-    font-weight: bold;
-}
-
-.secondary-button {
-    background-color: #6c757d;
-    color: white;
-    border: none;
-    padding: 10px;
-    width: 100%;
-    border-radius: 6px;
-    cursor: pointer;
-    margin-top: 10px;
-}
-
-/* カレンダー画面のレイアウト */
+/* カレンダー画面のレイアウト (画像2修正) */
 .app-container {
     display: flex;
-    width: 100%;
+    width: 100vw;
     height: 100vh;
-    align-items: stretch;
 }
 
+/* サイドバー */
 .sidebar {
     width: 250px;
+    min-width: 250px;
     background-color: #fff;
     border-right: 1px solid var(--border-color);
     padding: 20px;
     display: flex;
     flex-direction: column;
+    overflow-y: auto;
 }
 
+.sidebar h3 { font-size: 1rem; margin-top: 0; }
+.sidebar ul { list-style: none; padding: 0; margin-bottom: 30px; }
+.sidebar li { display: flex; align-items: center; gap: 10px; margin-bottom: 8px; }
+
+.dot { width: 12px; height: 12px; border-radius: 50%; display: inline-block; }
+
+/* メインエリア */
 .calendar-main {
     flex-grow: 1;
     display: flex;
     flex-direction: column;
     background-color: #fff;
+    overflow: hidden;
 }
 
 .calendar-header {
+    padding: 10px 20px;
     display: flex;
     justify-content: space-between;
     align-items: center;
-    padding: 15px 25px;
     border-bottom: 1px solid var(--border-color);
 }
 
 .header-left { display: flex; align-items: center; gap: 10px; }
-.header-icon { width: 32px; height: 32px; object-fit: contain; }
+.header-icon { width: 30px; height: 30px; }
+.header-left h2 { font-size: 1.2rem; margin: 0; }
 
 .nav-btn, .add-btn {
-    padding: 8px 15px;
-    border: 1px solid var(--border-color);
-    background: #fff;
-    border-radius: 5px;
-    cursor: pointer;
-    margin-left: 5px;
+    padding: 6px 12px; border: 1px solid var(--border-color);
+    background: #fff; border-radius: 4px; cursor: pointer;
 }
+.add-btn { background: var(--primary-color); color: #fff; border: none; font-weight: bold; }
 
-.add-btn { background-color: var(--primary-color); color: #fff; border: none; font-weight: bold; }
-
-/* カレンダーグリッド */
+/* カレンダーグリッド (ここが重要) */
 .calendar-grid {
     display: grid;
     grid-template-columns: repeat(7, 1fr);
+    grid-template-rows: auto 1fr; /* 曜日＋残りの高さ */
     flex-grow: 1;
+    width: 100%;
 }
 
 .day-header {
@@ -181,41 +126,33 @@ body {
     font-weight: bold;
     border-bottom: 1px solid var(--border-color);
     border-right: 1px solid var(--border-color);
+    background-color: #fafafa;
 }
 
-.sun { color: #d9534f; }
-.sat { color: #0275d8; }
+.calendar-days-contents {
+    display: contents;
+}
 
 .calendar-day {
-    min-height: 100px;
     border-right: 1px solid var(--border-color);
     border-bottom: 1px solid var(--border-color);
     padding: 5px;
+    position: relative;
+    background: #fff;
+    overflow-y: auto;
 }
 
-.day-number { font-size: 0.9rem; margin-bottom: 5px; display: block; }
+.day-number { font-size: 0.8rem; color: #777; margin-bottom: 5px; display: block; }
 
-/* 予定のラベル */
+/* 予定ラベル */
 .event-label {
-    font-size: 0.75rem;
-    padding: 3px 6px;
-    border-radius: 4px;
-    margin-bottom: 2px;
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    display: block;
+    font-size: 0.7rem; padding: 2px 4px; border-radius: 3px;
+    margin-bottom: 2px; display: block; overflow: hidden; text-overflow: ellipsis;
 }
 
-.color-mama { background-color: var(--color-mama); }
-.color-papa { background-color: var(--color-papa); }
-.color-brother { background-color: var(--color-brother); }
-.color-sister { background-color: var(--color-sister); }
-
-.modal {
-    position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-    background: rgba(0,0,0,0.5); display: flex; justify-content: center; align-items: center;
-}
-.modal-content { background: #fff; padding: 25px; border-radius: 10px; width: 300px; }
-
+/* 共通パーツ */
 .hidden { display: none; }
+.logout-button {
+    margin-top: auto; padding: 10px; background: #eee; border: none;
+    border-radius: 4px; cursor: pointer;
+}
