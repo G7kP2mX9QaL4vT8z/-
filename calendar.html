@@ -8,28 +8,67 @@
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
-    <div class="calendar-container">
-        <header>
-            <div class="header-top">
-                <img src="calendaricon.png" alt="icon" class="page-icon">
-                <h1 id="user-display">カレンダー</h1>
+    <div class="app-container">
+        <!-- サイドバー（近日中の予定とメンバー凡例） -->
+        <aside class="sidebar">
+            <div class="member-legend">
+                <h3>メンバー</h3>
+                <ul>
+                    <li><span class="dot color-mama"></span> 母</li>
+                    <li><span class="dot color-papa"></span> 父</li>
+                    <li><span class="dot color-brother"></span> 兄</li>
+                    <li><span class="dot color-sister"></span> 妹</li>
+                </ul>
+            </div>
+            <div class="upcoming-events">
+                <h3>近日中の予定</h3>
+                <div id="upcoming-list">読み込み中...</div>
             </div>
             <button onclick="logout()" class="logout-button">ログアウト</button>
-        </header>
+        </aside>
 
-        <section class="add-event-section">
-            <h3>予定を追加する</h3>
-            <input type="date" id="event-date">
-            <input type="text" id="event-plan" placeholder="予定を入力（例：買い物）">
-            <button onclick="submitEvent()">登録</button>
-        </section>
+        <!-- メインカレンダーエリア -->
+        <main class="calendar-main">
+            <header class="calendar-header">
+                <div class="header-left">
+                    <img src="calendaricon.png" alt="icon" class="header-icon">
+                    <h2 id="current-month-display">2024年1月</h2>
+                </div>
+                <div class="header-right">
+                    <button class="nav-btn" onclick="changeMonth(-1)">&lt;</button>
+                    <button class="nav-btn" onclick="changeMonth(0)">今日</button>
+                    <button class="nav-btn" onclick="changeMonth(1)">&gt;</button>
+                    <button class="add-btn" onclick="toggleAddModal()">+ 予定を追加</button>
+                </div>
+            </header>
 
-        <section class="event-list-section">
-            <h3>みんなの予定</h3>
-            <div id="event-list">
-                読み込み中...
+            <div class="calendar-grid">
+                <!-- 曜日のヘッダー -->
+                <div class="day-header sun">日</div>
+                <div class="day-header">月</div>
+                <div class="day-header">火</div>
+                <div class="day-header">水</div>
+                <div class="day-header">木</div>
+                <div class="day-header">金</div>
+                <div class="day-header sat">土</div>
+                
+                <!-- カレンダーの日付がJSで挿入される -->
+                <div id="calendar-days" class="calendar-days-contents"></div>
             </div>
-        </section>
+        </main>
+    </div>
+
+    <!-- 予定追加用のモーダル（初期は非表示） -->
+    <div id="add-modal" class="modal hidden">
+        <div class="modal-content">
+            <h3>予定を追加</h3>
+            <input type="date" id="event-date">
+            <input type="text" id="event-plan" placeholder="予定の内容">
+            <div class="modal-buttons">
+                <button onclick="submitEvent()" class="primary-button">登録</button>
+                <button onclick="toggleAddModal()" class="secondary-button">キャンセル</button>
+            </div>
+        </div>
     </div>
 
     <script src="calendar.js"></script>
