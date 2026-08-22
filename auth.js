@@ -1,6 +1,6 @@
 let selectedMember = "";
 let selectedAccountName = "";
-const GAS_WEB_APP_URL = "https://script.google.com/macros/s/AKfycbwErNALMT0pjSzV69ZQ02sMHTp7wlLYzTgy4g9IpMvapJUcbSbaVOT1rFUrk1Tu9zwvzQ/exec";
+const GAS_WEB_APP_URL = "https://script.google.com/macros/s/AKfycbyoMW1j4vpZMozamkiFIb2QF-MuhOOVrEyNGR6P-LcD3zY--EvFF7rz4YkjCGtPa0XOEA/exec";
 const FAMILY_SETTINGS_KEY = "family_calendar_members";
 const DEFAULT_MEMBERS = [
     { name: "母", accountName: "母", color: "#ffb6c1" },
@@ -20,9 +20,23 @@ function getFamilyMembers() {
     }
 }
 
-function renderLoginMembers() {
+async function renderLoginMembers() {
     const list = document.getElementById('login-member-list');
-    getFamilyMembers().forEach(member => {
+    let members = getFamilyMembers();
+    try {
+        const response = await fetch(GAS_WEB_APP_URL, {
+            method: "POST",
+            body: JSON.stringify({ action: "getFamilySettings" })
+        });
+        const result = await response.json();
+        if (Array.isArray(result.members) && result.members.length) {
+            members = result.members.map(member => ({ name: member.name, accountName: member.name, color: member.color || "#e0e0e0" }));
+            localStorage.setItem(FAMILY_SETTINGS_KEY, JSON.stringify(members));
+        }
+    } catch (error) {
+        console.info("保存済みの家族設定を使用します。");
+    }
+    members.forEach(member => {
         const button = document.createElement('button');
         button.className = 'member-button';
         button.textContent = member.name;
@@ -70,6 +84,7 @@ async function login() {
 
         if (result.status === 'success') {
             localStorage.setItem('family_calendar_user', selectedAccountName);
+            sessionStorage.setItem('family_calendar_session', result.sessionToken || '');
             window.location.href = "calendar.html"; 
         } else {
             alert("パスワードが正しくありません");

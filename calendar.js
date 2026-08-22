@@ -1,8 +1,9 @@
-const GAS_WEB_APP_URL = "https://script.google.com/macros/s/AKfycbwErNALMT0pjSzV69ZQ02sMHTp7wlLYzTgy4g9IpMvapJUcbSbaVOT1rFUrk1Tu9zwvzQ/exec";
-const currentUser = localStorage.getItem('family_calendar_user');
+const GAS_WEB_APP_URL = "https://script.google.com/macros/s/AKfycbyoMW1j4vpZMozamkiFIb2QF-MuhOOVrEyNGR6P-LcD3zY--EvFF7rz4YkjCGtPa0XOEA/exec";
+let currentUser = localStorage.getItem('family_calendar_user');
 let currentViewDate = new Date();
 let selectedDateStr = ""; // 選択された日付を保持する変数
 const FAMILY_SETTINGS_KEY = "family_calendar_members";
+const sessionToken = sessionStorage.getItem('family_calendar_session');
 const DEFAULT_MEMBERS = [
     { name: "母", accountName: "母", color: "#ffb6c1" },
     { name: "父", accountName: "父", color: "#98fb98" },
@@ -12,11 +13,12 @@ const DEFAULT_MEMBERS = [
 const DEFAULT_COLORS = ["#ffb6c1", "#98fb98", "#add8e6", "#fffacd", "#dda0dd", "#ffd580"];
 let familyMembers = loadFamilyMembers();
 
-window.onload = function() {
+window.onload = async function() {
     if (!currentUser) {
         window.location.href = "index.html";
         return;
     }
+    await syncFamilyMembers();
     renderMemberList();
     renderCalendar();
 };
@@ -27,6 +29,25 @@ function loadFamilyMembers() {
         return Array.isArray(saved) && saved.length ? saved : DEFAULT_MEMBERS.map(member => ({ ...member }));
     } catch (error) {
         return DEFAULT_MEMBERS.map(member => ({ ...member }));
+    }
+}
+
+async function syncFamilyMembers() {
+    try {
+        const response = await fetch(GAS_WEB_APP_URL, {
+            method: "POST",
+            body: JSON.stringify({ action: "getFamilySettings" })
+        });
+        const result = await response.json();
+        if (!Array.isArray(result.members) || !result.members.length) return;
+        familyMembers = result.members.map(member => ({
+            name: member.name,
+            accountName: member.name,
+            color: member.color || "#e0e0e0"
+        }));
+        localStorage.setItem(FAMILY_SETTINGS_KEY, JSON.stringify(familyMembers));
+    } catch (error) {
+        console.info("保存済みの家族設定を使用します。");
     }
 }
 
@@ -143,6 +164,15 @@ function openAddModal() {
         return;
     }
     document.getElementById('event-date').value = selectedDateStr;
+    const memberSelect = document.getElementById('event-member');
+    memberSelect.innerHTML = "";
+    familyMembers.forEach(member => {
+        const option = document.createElement('option');
+        option.value = member.accountName || member.name;
+        option.textContent = member.name;
+        option.selected = option.value === currentUser;
+        memberSelect.appendChild(option);
+    });
     document.getElementById('add-modal').classList.remove('hidden');
 }
 
@@ -180,7 +210,7 @@ function renderFamilySettingsRows(members) {
         const row = document.createElement('div');
         row.className = 'family-setting-row';
         row.dataset.accountName = member.accountName || member.name;
-        row.innerHTML = `<input type="text" class="family-name-input" maxlength="20" value="${escapeHtml(member.name)}" aria-label="メンバー名"><input type="color" class="family-color-input" value="${member.color}" aria-label="メンバーの色">`;
+        row.innerHTML = `<input type="text" class="family-name-input" maxlength="20" value="${escapeHtml(member.name)}" aria-label="メンバー名"><div class="password-field"><input type="password" class="family-password-input" autocomplete="new-password" placeholder="変更しない" aria-label="${escapeHtml(member.name)}の新しいパスワード"><button type="button" class="password-toggle" onclick="togglePasswordVisibility(this)" aria-label="パスワードを表示">&#128065;</button></div><input type="color" class="family-color-input" value="${member.color}" aria-label="メンバーの色">`;
         list.appendChild(row);
     });
 }
@@ -189,11 +219,12 @@ function readFamilySettingsRows() {
     return Array.from(document.querySelectorAll('.family-setting-row')).map(row => ({
         name: row.querySelector('.family-name-input').value.trim(),
         accountName: row.dataset.accountName,
+        password: row.querySelector('.family-password-input').value,
         color: row.querySelector('.family-color-input').value
     }));
 }
 
-function saveFamilySettings() {
+async function saveFamilySettings() {
     const members = readFamilySettingsRows();
     if (members.some(member => !member.name)) {
         alert("すべてのメンバーの名前を入力してください。");
@@ -203,11 +234,36 @@ function saveFamilySettings() {
         alert("メンバー名は重複しないようにしてください。");
         return;
     }
-    familyMembers = members;
-    localStorage.setItem(FAMILY_SETTINGS_KEY, JSON.stringify(familyMembers));
-    closeFamilySettings();
-    renderMemberList();
-    renderCalendar();
+    try {
+        const response = await fetch(GAS_WEB_APP_URL, {
+            method: "POST",
+            body: JSON.stringify({ action: "updateFamilySettings", members: members, sessionToken: sessionToken })
+        });
+        const result = await response.json();
+        if (result.status !== 'success') throw new Error(result.message || "保存できませんでした");
+
+        const previousUser = currentUser;
+        familyMembers = members.map(({ name, accountName, color }) => ({ name, accountName: name, color }));
+        const renamedCurrentUser = members.find(member => member.accountName === previousUser);
+        if (renamedCurrentUser) {
+            currentUser = renamedCurrentUser.name;
+            localStorage.setItem('family_calendar_user', currentUser);
+        }
+        localStorage.setItem(FAMILY_SETTINGS_KEY, JSON.stringify(familyMembers));
+        closeFamilySettings();
+        renderMemberList();
+        renderCalendar();
+    } catch (error) {
+        console.error("家族設定の保存に失敗しました:", error);
+        alert("家族設定を保存できませんでした。Google Apps Scriptの更新が必要です。");
+    }
+}
+
+function togglePasswordVisibility(button) {
+    const input = button.previousElementSibling;
+    const showPassword = input.type === 'password';
+    input.type = showPassword ? 'text' : 'password';
+    button.setAttribute('aria-label', showPassword ? 'パスワードを非表示' : 'パスワードを表示');
 }
 
 function escapeHtml(value) {
@@ -219,11 +275,12 @@ function escapeHtml(value) {
 async function submitEvent() {
     const date = document.getElementById('event-date').value;
     const plan = document.getElementById('event-plan').value;
-    if (!date || !plan) return;
+    const member = document.getElementById('event-member').value;
+    if (!date || !plan.trim() || !member) return;
 
     await fetch(GAS_WEB_APP_URL, {
         method: "POST",
-        body: JSON.stringify({ action: "addEvent", username: currentUser, date: date, plan: plan })
+        body: JSON.stringify({ action: "addEvent", username: member, date: date, plan: plan.trim() })
     });
     closeAddModal();
     renderCalendar();
@@ -234,17 +291,19 @@ function updateUpcomingEvents(events) {
     const today = new Date();
     today.setHours(0,0,0,0);
 
-    const upcoming = events
-        .filter(e => new Date(e.date) >= today)
-        .sort((a, b) => new Date(a.date) - new Date(b.date))
-        .slice(0, 5);
+    const tomorrow = new Date(today);
+    tomorrow.setDate(tomorrow.getDate() + 1);
+    const upcoming = events.filter(e => {
+        const eventDate = new Date(e.date);
+        return e.name === currentUser && eventDate >= today && eventDate < tomorrow;
+    });
 
     list.innerHTML = upcoming.length ? "" : "予定なし";
     upcoming.forEach(e => {
         const div = document.createElement('div');
         div.style.fontSize = "0.8rem";
         div.style.marginBottom = "8px";
-        div.innerHTML = `<small>${e.date.split('T')[0].substring(5).replace('-', '/')}</small> <strong>${e.plan}</strong>`;
+        div.textContent = e.plan;
         list.appendChild(div);
     });
 }

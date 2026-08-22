@@ -231,8 +231,39 @@ body.login-page {
     width: 320px; text-align: center; box-shadow: 0 4px 15px rgba(0,0,0,0.2);
 }
 
+.modal-body {
+    text-align: left;
+}
+
+.event-form-row {
+    display: grid;
+    grid-template-columns: 120px 1fr;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 12px;
+}
+
+.event-form-row input,
+.event-form-row select {
+    width: 100%;
+    padding: 8px;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+}
+
+#event-plan {
+    width: 100%;
+    min-height: 110px;
+    padding: 10px;
+    border: 1px solid #ccc;
+    border-radius: 6px;
+    resize: both;
+    font: inherit;
+}
+
 .settings-modal-content {
-    width: 380px;
+    width: 560px;
+    max-width: calc(100vw - 30px);
     max-height: 90vh;
     overflow-y: auto;
 }
@@ -245,6 +276,11 @@ body.login-page {
     align-items: center;
     gap: 12px;
     text-align: left;
+}
+
+.settings-labels,
+.family-setting-row {
+    grid-template-columns: minmax(90px, 1fr) minmax(150px, 1.4fr) 52px;
 }
 
 .family-count-row {
@@ -276,6 +312,27 @@ body.login-page {
     padding: 2px;
     border: 1px solid #ccc;
     border-radius: 6px;
+    cursor: pointer;
+}
+
+.password-field {
+    display: flex;
+}
+
+.family-password-input {
+    min-width: 0;
+    width: 100%;
+    padding: 9px;
+    border: 1px solid #ccc;
+    border-right: none;
+    border-radius: 6px 0 0 6px;
+}
+
+.password-toggle {
+    width: 42px;
+    border: 1px solid #ccc;
+    border-radius: 0 6px 6px 0;
+    background: #fff;
     cursor: pointer;
 }
 
