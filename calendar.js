@@ -280,13 +280,13 @@ async function renderTodayHousework() {
         houseworkAssignments = result;
         const items = result.filter(item => {
             const date = new Date(item.date);
-            return item.name === currentUser && item.status !== '完了' && date >= today && date < tomorrow;
+            return item.name === currentUser && date >= today && date < tomorrow;
         });
         list.innerHTML = items.length ? "" : "家事なし";
         items.forEach(item => {
             const div = document.createElement('div');
-            div.className = 'today-item';
-            div.textContent = item.housework;
+            div.className = `today-item${item.status === '完了' ? ' completed-housework' : ''}`;
+            div.textContent = item.status === '完了' ? `${item.housework}（完了）` : item.housework;
             list.appendChild(div);
         });
         renderSelectedDayHousework();
@@ -298,16 +298,16 @@ function renderSelectedDayHousework() {
     if (!list) return;
     const target = selectedDateStr || formatLocalDate(new Date());
     document.getElementById('selected-date-label').textContent = selectedDateStr ? target.replaceAll('-', '/') : '今日';
-    const items = houseworkAssignments.filter(item => item.status !== '完了' && formatLocalDate(new Date(item.date)) === target);
+    const items = houseworkAssignments.filter(item => formatLocalDate(new Date(item.date)) === target);
     list.innerHTML = items.length ? "" : "家事なし";
     items.forEach(item => {
         const row = document.createElement('div');
-        row.className = 'assigned-housework-row';
+        row.className = `assigned-housework-row${item.status === '完了' ? ' completed-housework' : ''}`;
         row.style.backgroundColor = getMemberColor(item.name);
         const text = document.createElement('span');
-        text.textContent = `${item.name}：${item.housework}`;
+        text.textContent = `${item.name}：${item.housework}${item.status === '完了' ? '（完了）' : ''}`;
         row.appendChild(text);
-        if (item.name === currentUser) {
+        if (item.name === currentUser && item.status !== '完了') {
             const button = document.createElement('button');
             button.type = 'button';
             button.textContent = '完了';
@@ -325,12 +325,12 @@ async function completeHousework(houseworkId, row) {
         if (result.status !== 'success') throw new Error(result.message);
         const item = houseworkAssignments.find(value => value.id === houseworkId);
         if (item) item.status = '完了';
-        row.classList.add('fade-out');
-        setTimeout(() => {
-            row.remove();
-            renderSelectedDayHousework();
-            renderTodayHousework();
-        }, 450);
+        row.classList.add('completed-housework');
+        const text = row.querySelector('span');
+        if (text && !text.textContent.endsWith('（完了）')) text.textContent += '（完了）';
+        const button = row.querySelector('button');
+        if (button) button.remove();
+        renderTodayHousework();
     } catch (error) { alert(error.message || "家事を完了にできませんでした。"); }
 }
 

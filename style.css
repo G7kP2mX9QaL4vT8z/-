@@ -145,10 +145,10 @@ body.login-page {
 .upcoming-events { display: flex; flex-direction: column; flex-grow: 1; min-height: 0; }
 .selected-day-housework { margin-top: auto; padding-top: 15px; max-height: 42%; overflow-y: auto; }
 .selected-date-label { margin: -8px 0 8px; color: var(--text-sub); font-size: 0.75rem; }
-.assigned-housework-row { display: flex; align-items: center; gap: 6px; margin-bottom: 7px; padding: 7px; border-radius: 6px; font-size: 0.78rem; transition: opacity 0.45s, transform 0.45s; }
+.assigned-housework-row { display: flex; align-items: center; gap: 6px; margin-bottom: 7px; padding: 7px; border-radius: 6px; font-size: 0.78rem; transition: opacity 0.35s, filter 0.35s; }
 .assigned-housework-row span { flex: 1; min-width: 0; overflow-wrap: anywhere; }
 .assigned-housework-row button { border: none; border-radius: 4px; padding: 4px 7px; background: #fff; cursor: pointer; font-weight: bold; }
-.assigned-housework-row.fade-out { opacity: 0; transform: translateX(-12px); }
+.completed-housework { opacity: 0.45; filter: saturate(0.25); text-decoration: line-through; }
 
 .calendar-main {
     flex-grow: 1;
