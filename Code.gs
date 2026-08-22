@@ -15,6 +15,10 @@ function doPost(e) {
       case 'login': return loginCheck(params.familyCode, params.username, params.password);
       case 'getEvents': return getEvents(params.sessionToken);
       case 'addEvent': return addEvent(params.sessionToken, params.date, params.username, params.plan);
+      case 'getHousework': return getHousework(params.sessionToken);
+      case 'addHousework': return addHousework(params.sessionToken, params.date, params.username, params.housework);
+      case 'getHouseworkTypes': return getHouseworkTypes(params.sessionToken);
+      case 'updateHouseworkTypes': return updateHouseworkTypes(params.sessionToken, params.types);
       case 'updateFamilySettings': return updateFamilySettings(params.members, params.sessionToken);
       default: return jsonResponse({ status: 'fail', message: '未対応の操作です。' });
     }
@@ -47,6 +51,9 @@ function createFamily(members) {
       passwordSheet.getRange(2, 1, normalizedMembers.length, 3).setValues(
         normalizedMembers.map(member => [member.name, member.password, member.color])
       );
+      const typesSheet = spreadsheet.insertSheet(`${familyCode}-Types of Housework`);
+      createdSheets.push(typesSheet);
+      typesSheet.getRange(1, 1, 1, 2).setValues([['分類', '家事']]);
       return jsonResponse({ status: 'success', familyCode: familyCode });
     } catch (error) {
       createdSheets.forEach(sheet => spreadsheet.deleteSheet(sheet));
@@ -77,6 +84,8 @@ function migrateLegacyFamily() {
     calendarSheet.setName(`${familyCode}-Calendar`);
     houseworkSheet.setName(`${familyCode}-Housework`);
     passwordSheet.setName(`${familyCode}-Password`);
+    const typesSheet = spreadsheet.insertSheet(`${familyCode}-Types of Housework`);
+    typesSheet.getRange(1, 1, 1, 2).setValues([['分類', '家事']]);
     console.log(`既存家族の家族コード: ${familyCode}`);
     return familyCode;
   } finally {
@@ -128,6 +137,69 @@ function addEvent(sessionToken, date, username, plan) {
   if (!memberNames.includes(username)) throw new Error('指定されたメンバーが見つかりません。');
   getFamilySheet(session.familyCode, 'Calendar').appendRow([date, username, plan]);
   return jsonResponse({ status: 'success' });
+}
+
+function getHousework(sessionToken) {
+  const session = getSession(sessionToken);
+  const data = getFamilySheet(session.familyCode, 'Housework').getDataRange().getValues();
+  const housework = [];
+  for (let i = 1; i < data.length; i++) {
+    if (data[i][0]) housework.push({ date: data[i][0], name: data[i][1], housework: data[i][2], status: data[i][3] });
+  }
+  return jsonResponse(housework);
+}
+
+function addHousework(sessionToken, date, username, housework) {
+  const session = getSession(sessionToken);
+  if (!date || !username || !housework) throw new Error('家事の入力内容が不足しています。');
+  if (!getMemberNames(session.familyCode).includes(username)) throw new Error('指定されたメンバーが見つかりません。');
+  const allTypes = Object.values(readHouseworkTypes(session.familyCode)).flat();
+  if (!allTypes.includes(housework)) throw new Error('指定された家事が見つかりません。');
+  getFamilySheet(session.familyCode, 'Housework').appendRow([date, username, housework, '未完了']);
+  return jsonResponse({ status: 'success' });
+}
+
+function getHouseworkTypes(sessionToken) {
+  const session = getSession(sessionToken);
+  return jsonResponse({ status: 'success', types: readHouseworkTypes(session.familyCode) });
+}
+
+function updateHouseworkTypes(sessionToken, types) {
+  const session = getSession(sessionToken);
+  const categories = ['食事関連', '掃除関連', 'ペット関連', 'その他'];
+  const rows = [];
+  categories.forEach(category => {
+    const values = Array.isArray(types && types[category]) ? types[category] : [];
+    const uniqueValues = [...new Set(values.map(value => String(value).trim()).filter(Boolean))];
+    uniqueValues.forEach(value => rows.push([category, value]));
+  });
+  const sheet = getOrCreateHouseworkTypesSheet(session.familyCode);
+  const oldRows = Math.max(sheet.getLastRow() - 1, 0);
+  if (oldRows) sheet.getRange(2, 1, oldRows, 2).clearContent();
+  if (rows.length) sheet.getRange(2, 1, rows.length, 2).setValues(rows);
+  return jsonResponse({ status: 'success' });
+}
+
+function readHouseworkTypes(familyCode) {
+  const result = { '食事関連': [], '掃除関連': [], 'ペット関連': [], 'その他': [] };
+  const data = getOrCreateHouseworkTypesSheet(familyCode).getDataRange().getValues();
+  for (let i = 1; i < data.length; i++) {
+    const category = String(data[i][0] || '');
+    const value = String(data[i][1] || '').trim();
+    if (result[category] && value) result[category].push(value);
+  }
+  return result;
+}
+
+function getOrCreateHouseworkTypesSheet(familyCode) {
+  const spreadsheet = SpreadsheetApp.openById(SPREADSHEET_ID);
+  const name = `${familyCode}-Types of Housework`;
+  let sheet = spreadsheet.getSheetByName(name);
+  if (!sheet) {
+    sheet = spreadsheet.insertSheet(name);
+    sheet.getRange(1, 1, 1, 2).setValues([['分類', '家事']]);
+  }
+  return sheet;
 }
 
 function updateFamilySettings(members, sessionToken) {

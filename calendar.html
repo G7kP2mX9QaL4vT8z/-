@@ -18,6 +18,8 @@
             <div class="upcoming-events">
                 <h3>今日の予定</h3>
                 <div id="upcoming-list">読み込み中...</div>
+                <h3>今日の家事</h3>
+                <div id="today-housework-list">読み込み中...</div>
             </div>
         </aside>
 
@@ -30,8 +32,10 @@
                     <button class="arrow-btn" onclick="changeMonth(1)">&#10095;</button>
                 </div>
                 <div class="header-right">
+                    <button class="add-btn" onclick="openAddModal()">+予定を追加</button>
+                    <button class="add-btn housework-add-btn" onclick="openHouseworkModal()">+家事を追加</button>
+                    <button class="settings-btn" onclick="openHouseworkSettings()">家事設定</button>
                     <button class="settings-btn" onclick="openFamilySettings()">家族設定</button>
-                    <button class="add-btn" onclick="openAddModal()">+ 予定を追加</button>
                 </div>
             </header>
 
@@ -61,6 +65,30 @@
                 <button onclick="submitEvent()" class="primary-button">予定を追加</button>
                 <button onclick="closeAddModal()" class="secondary-button">キャンセル</button>
             </div>
+        </div>
+    </div>
+
+    <!-- 家事追加用のモーダル -->
+    <div id="housework-modal" class="modal hidden">
+        <div class="modal-content">
+            <h3>家事を追加</h3>
+            <div class="modal-body">
+                <div class="event-form-row"><label for="housework-date">選択した日付：</label><input type="date" id="housework-date"></div>
+                <div class="event-form-row"><label for="housework-member">メンバー：</label><select id="housework-member"></select></div>
+                <div class="event-form-row"><label for="housework-type">家事：</label><select id="housework-type"></select></div>
+            </div>
+            <button onclick="submitHousework()" class="primary-button">家事を追加</button>
+            <button onclick="closeHouseworkModal()" class="secondary-button">キャンセル</button>
+        </div>
+    </div>
+
+    <!-- 家事設定用のモーダル -->
+    <div id="housework-settings-modal" class="modal hidden">
+        <div class="modal-content housework-settings-content">
+            <h3>家事設定</h3>
+            <div id="housework-settings-list"></div>
+            <button onclick="saveHouseworkSettings()" class="primary-button">保存</button>
+            <button onclick="closeHouseworkSettings()" class="secondary-button">キャンセル</button>
         </div>
     </div>
 

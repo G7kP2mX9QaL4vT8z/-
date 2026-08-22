@@ -1,4 +1,4 @@
-const GAS_WEB_APP_URL = "https://script.google.com/macros/s/AKfycbyrmkr1sDKeu0SGZLVBZMk_JGtCd4ncpA_gUZlVoinsLn_v-yu34D0MoYw69S8a3Nz-Hw/exec";
+const GAS_WEB_APP_URL = "https://script.google.com/macros/s/AKfycbwzAoj-EZOHTz34hrigOI8VSi7KGye90fICRKPRpyXePtpYEg2W6SuXl03nueFbl1vOPw/exec";
 let currentUser = localStorage.getItem('family_calendar_user');
 const familyCode = localStorage.getItem('family_calendar_code');
 let currentViewDate = new Date();
@@ -13,6 +13,8 @@ const DEFAULT_MEMBERS = [
 ];
 const DEFAULT_COLORS = ["#ffb6c1", "#98fb98", "#add8e6", "#fffacd", "#dda0dd", "#ffd580"];
 let familyMembers = loadFamilyMembers();
+const HOUSEWORK_CATEGORIES = ['食事関連', '掃除関連', 'ペット関連', 'その他'];
+let houseworkTypes = {};
 
 window.onload = async function() {
     if (!currentUser || !familyCode || !sessionToken) {
@@ -22,6 +24,7 @@ window.onload = async function() {
     await syncFamilyMembers();
     renderMemberList();
     renderCalendar();
+    renderTodayHousework();
 };
 
 function loadFamilyMembers() {
@@ -180,6 +183,160 @@ function openAddModal() {
 function closeAddModal() {
     document.getElementById('add-modal').classList.add('hidden');
     document.getElementById('event-plan').value = "";
+}
+
+async function fetchHouseworkTypes() {
+    const response = await fetch(GAS_WEB_APP_URL, { method: "POST", body: JSON.stringify({ action: "getHouseworkTypes", sessionToken }) });
+    const result = await response.json();
+    if (result.status !== 'success') throw new Error(result.message || '家事設定を取得できませんでした。');
+    houseworkTypes = result.types;
+    return houseworkTypes;
+}
+
+async function openHouseworkModal() {
+    if (!selectedDateStr) { alert("カレンダーの日付をクリックして選択してください。"); return; }
+    try {
+        await fetchHouseworkTypes();
+        const typeSelect = document.getElementById('housework-type');
+        typeSelect.innerHTML = "";
+        HOUSEWORK_CATEGORIES.forEach(category => {
+            const values = houseworkTypes[category] || [];
+            if (!values.length) return;
+            const group = document.createElement('optgroup');
+            group.label = category;
+            values.forEach(value => {
+                const option = document.createElement('option');
+                option.value = value;
+                option.textContent = value;
+                group.appendChild(option);
+            });
+            typeSelect.appendChild(group);
+        });
+        if (!typeSelect.options.length) { alert("家事設定で家事の種類を追加してください。"); return; }
+        document.getElementById('housework-date').value = selectedDateStr;
+        fillMemberSelect(document.getElementById('housework-member'));
+        document.getElementById('housework-modal').classList.remove('hidden');
+    } catch (error) { alert(error.message); }
+}
+
+function fillMemberSelect(select) {
+    select.innerHTML = "";
+    familyMembers.forEach(member => {
+        const option = document.createElement('option');
+        option.value = member.accountName || member.name;
+        option.textContent = member.name;
+        option.selected = option.value === currentUser;
+        select.appendChild(option);
+    });
+}
+
+function closeHouseworkModal() { document.getElementById('housework-modal').classList.add('hidden'); }
+
+async function submitHousework() {
+    const date = document.getElementById('housework-date').value;
+    const username = document.getElementById('housework-member').value;
+    const housework = document.getElementById('housework-type').value;
+    if (!date || !username || !housework) return;
+    try {
+        const response = await fetch(GAS_WEB_APP_URL, { method: "POST", body: JSON.stringify({ action: "addHousework", sessionToken, date, username, housework }) });
+        const result = await response.json();
+        if (result.status !== 'success') throw new Error(result.message);
+        closeHouseworkModal();
+        renderTodayHousework();
+    } catch (error) { alert(error.message || "家事を追加できませんでした。"); }
+}
+
+async function renderTodayHousework() {
+    const list = document.getElementById('today-housework-list');
+    try {
+        const response = await fetch(GAS_WEB_APP_URL, { method: "POST", body: JSON.stringify({ action: "getHousework", sessionToken }) });
+        const result = await response.json();
+        if (!Array.isArray(result)) throw new Error(result.message);
+        const today = new Date();
+        today.setHours(0, 0, 0, 0);
+        const tomorrow = new Date(today);
+        tomorrow.setDate(tomorrow.getDate() + 1);
+        const items = result.filter(item => {
+            const date = new Date(item.date);
+            return item.name === currentUser && date >= today && date < tomorrow;
+        });
+        list.innerHTML = items.length ? "" : "家事なし";
+        items.forEach(item => {
+            const div = document.createElement('div');
+            div.className = 'today-item';
+            div.textContent = item.housework;
+            list.appendChild(div);
+        });
+    } catch (error) { list.textContent = "読み込めませんでした"; }
+}
+
+async function openHouseworkSettings() {
+    try {
+        await fetchHouseworkTypes();
+        renderHouseworkSettings();
+        document.getElementById('housework-settings-modal').classList.remove('hidden');
+    } catch (error) { alert(error.message); }
+}
+
+function closeHouseworkSettings() { document.getElementById('housework-settings-modal').classList.add('hidden'); }
+
+function renderHouseworkSettings() {
+    const container = document.getElementById('housework-settings-list');
+    container.innerHTML = "";
+    HOUSEWORK_CATEGORIES.forEach(category => {
+        const section = document.createElement('section');
+        section.className = 'housework-category';
+        section.dataset.category = category;
+        const title = document.createElement('h4');
+        title.textContent = category;
+        section.appendChild(title);
+        const items = document.createElement('div');
+        items.className = 'housework-type-items';
+        (houseworkTypes[category] || []).forEach(value => appendHouseworkTypeRow(items, value));
+        section.appendChild(items);
+        const addRow = document.createElement('div');
+        addRow.className = 'housework-type-add';
+        addRow.innerHTML = `<input type="text" maxlength="30" placeholder="家事を入力" aria-label="${category}に追加する家事"><button type="button" onclick="addHouseworkType(this)">追加</button>`;
+        section.appendChild(addRow);
+        container.appendChild(section);
+    });
+}
+
+function appendHouseworkTypeRow(container, value) {
+    const row = document.createElement('div');
+    row.className = 'housework-type-row';
+    const span = document.createElement('span');
+    span.textContent = value;
+    const button = document.createElement('button');
+    button.type = 'button';
+    button.textContent = '削除';
+    button.onclick = () => row.remove();
+    row.append(span, button);
+    container.appendChild(row);
+}
+
+function addHouseworkType(button) {
+    const input = button.previousElementSibling;
+    const value = input.value.trim();
+    if (!value) return;
+    const items = button.closest('.housework-category').querySelector('.housework-type-items');
+    const existing = Array.from(items.querySelectorAll('span')).some(span => span.textContent === value);
+    if (!existing) appendHouseworkTypeRow(items, value);
+    input.value = "";
+}
+
+async function saveHouseworkSettings() {
+    const types = {};
+    document.querySelectorAll('.housework-category').forEach(section => {
+        types[section.dataset.category] = Array.from(section.querySelectorAll('.housework-type-row span')).map(span => span.textContent);
+    });
+    try {
+        const response = await fetch(GAS_WEB_APP_URL, { method: "POST", body: JSON.stringify({ action: "updateHouseworkTypes", sessionToken, types }) });
+        const result = await response.json();
+        if (result.status !== 'success') throw new Error(result.message);
+        houseworkTypes = types;
+        closeHouseworkSettings();
+    } catch (error) { alert(error.message || "家事設定を保存できませんでした。"); }
 }
 
 function openFamilySettings() {
