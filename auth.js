@@ -9,7 +9,12 @@ function setVisibleSection(sectionId) {
 }
 
 function showStartSection() { selectedFamilyCode = ""; setVisibleSection('start-section'); }
-function showJoinFamily() { setVisibleSection('join-code-section'); document.getElementById('family-code-input').focus(); }
+function showJoinFamily() {
+    const codeInput = document.getElementById('family-code-input');
+    codeInput.value = "";
+    setVisibleSection('join-code-section');
+    codeInput.focus();
+}
 function showMemberSection() { selectedAccountName = ""; document.getElementById('password-input').value = ""; setVisibleSection('member-section'); }
 
 async function joinFamily() {

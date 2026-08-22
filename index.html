@@ -5,7 +5,7 @@
 <div class="login-container">
 <img src="calendaricon.png" alt="icon" class="page-icon"><h1 class="main-title">家族カレンダー</h1>
 <div id="start-section"><p class="sub-title">家族グループを作成するか、参加してください。</p><button class="primary-button" onclick="openCreateFamily()">家族グループの作成</button><button class="secondary-button login-action-button" onclick="showJoinFamily()">家族グループに参加</button></div>
-<div id="join-code-section" class="hidden"><h2>家族グループに参加</h2><label for="family-code-input" class="form-label">家族コード</label><input type="text" id="family-code-input" class="code-input" maxlength="4" placeholder="AB12" autocomplete="off"><button class="primary-button" onclick="joinFamily()">参加</button><button class="secondary-button" onclick="showStartSection()">戻る</button></div>
+<div id="join-code-section" class="hidden"><h2>家族グループに参加</h2><label for="family-code-input" class="form-label">家族コード</label><input type="text" id="family-code-input" name="family-group-code" class="code-input" maxlength="4" pattern="[A-Z]{2}[0-9]{2}" placeholder="AB12" autocomplete="one-time-code" autocapitalize="characters" spellcheck="false" inputmode="text"><button class="primary-button" onclick="joinFamily()">参加</button><button class="secondary-button" onclick="showStartSection()">戻る</button></div>
 <div id="member-section" class="hidden"><p class="sub-title">自分のアカウントを選択してください。</p><div id="login-member-list" class="member-list"></div><button class="secondary-button" onclick="showJoinFamily()">戻る</button></div>
 <div id="password-section" class="hidden"><h2 id="selected-member-name"></h2><input type="password" id="password-input" placeholder="パスワードを入力"><button class="primary-button" onclick="login()">ログイン</button><button class="secondary-button" onclick="showMemberSection()">戻る</button></div>
 </div>
