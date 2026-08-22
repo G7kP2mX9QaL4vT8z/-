@@ -1,4 +1,4 @@
-const GAS_WEB_APP_URL = "https://script.google.com/macros/s/AKfycbwzAoj-EZOHTz34hrigOI8VSi7KGye90fICRKPRpyXePtpYEg2W6SuXl03nueFbl1vOPw/exec";
+const GAS_WEB_APP_URL = "https://script.google.com/macros/s/AKfycbwVa40GuGda4hVoJ97cPhGaZG2Hoz2KDvBIbZ9YYc8XahMnOC4bG8hKaEwZN07ZMRhlsg/exec";
 const DEFAULT_COLORS = ["#f5f5f5", "#3510ff", "#ff1010", "#ffd410", "#98fb98", "#dda0dd"];
 const DEFAULT_NAMES = ["父", "母", "兄", "妹"];
 let selectedAccountName = "";

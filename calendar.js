@@ -1,4 +1,4 @@
-const GAS_WEB_APP_URL = "https://script.google.com/macros/s/AKfycbwzAoj-EZOHTz34hrigOI8VSi7KGye90fICRKPRpyXePtpYEg2W6SuXl03nueFbl1vOPw/exec";
+const GAS_WEB_APP_URL = "https://script.google.com/macros/s/AKfycbwVa40GuGda4hVoJ97cPhGaZG2Hoz2KDvBIbZ9YYc8XahMnOC4bG8hKaEwZN07ZMRhlsg/exec";
 let currentUser = localStorage.getItem('family_calendar_user');
 const familyCode = localStorage.getItem('family_calendar_code');
 let currentViewDate = new Date();
@@ -15,6 +15,7 @@ const DEFAULT_COLORS = ["#ffb6c1", "#98fb98", "#add8e6", "#fffacd", "#dda0dd", "
 let familyMembers = loadFamilyMembers();
 const HOUSEWORK_CATEGORIES = ['食事関連', '掃除関連', 'ペット関連', 'その他'];
 let houseworkTypes = {};
+let houseworkAssignments = [];
 
 window.onload = async function() {
     if (!currentUser || !familyCode || !sessionToken) {
@@ -112,6 +113,7 @@ async function renderCalendar() {
             // このセルを選択状態にする
             cell.classList.add('selected');
             selectedDateStr = dateStr;
+            renderSelectedDayHousework();
         };
 
         const numSpan = document.createElement('span');
@@ -129,7 +131,16 @@ async function renderCalendar() {
             const label = document.createElement('span');
             label.className = 'event-label';
             label.style.backgroundColor = getMemberColor(e.name);
-            label.textContent = e.plan;
+            const text = document.createElement('span');
+            text.className = 'event-label-text';
+            text.textContent = e.plan;
+            const deleteButton = document.createElement('button');
+            deleteButton.type = 'button';
+            deleteButton.className = 'event-delete-button';
+            deleteButton.textContent = '×';
+            deleteButton.setAttribute('aria-label', `${e.plan}を削除`);
+            deleteButton.onclick = event => { event.stopPropagation(); deleteEvent(e.id, label); };
+            label.append(text, deleteButton);
             cell.appendChild(label);
         });
 
@@ -152,6 +163,16 @@ async function fetchEvents() {
 function getMemberColor(name) {
     const member = familyMembers.find(item => item.name === name || item.accountName === name);
     return member ? member.color : "#e0e0e0";
+}
+
+async function deleteEvent(eventId, element) {
+    try {
+        const response = await fetch(GAS_WEB_APP_URL, { method: "POST", body: JSON.stringify({ action: "deleteEvent", sessionToken, eventId }) });
+        const result = await response.json();
+        if (result.status !== 'success') throw new Error(result.message);
+        element.remove();
+        renderCalendar();
+    } catch (error) { alert(error.message || "予定を削除できませんでした。"); }
 }
 
 function changeMonth(diff) {
@@ -256,9 +277,10 @@ async function renderTodayHousework() {
         today.setHours(0, 0, 0, 0);
         const tomorrow = new Date(today);
         tomorrow.setDate(tomorrow.getDate() + 1);
+        houseworkAssignments = result;
         const items = result.filter(item => {
             const date = new Date(item.date);
-            return item.name === currentUser && date >= today && date < tomorrow;
+            return item.name === currentUser && item.status !== '完了' && date >= today && date < tomorrow;
         });
         list.innerHTML = items.length ? "" : "家事なし";
         items.forEach(item => {
@@ -267,7 +289,53 @@ async function renderTodayHousework() {
             div.textContent = item.housework;
             list.appendChild(div);
         });
+        renderSelectedDayHousework();
     } catch (error) { list.textContent = "読み込めませんでした"; }
+}
+
+function renderSelectedDayHousework() {
+    const list = document.getElementById('selected-day-housework-list');
+    if (!list) return;
+    const target = selectedDateStr || formatLocalDate(new Date());
+    document.getElementById('selected-date-label').textContent = selectedDateStr ? target.replaceAll('-', '/') : '今日';
+    const items = houseworkAssignments.filter(item => item.status !== '完了' && formatLocalDate(new Date(item.date)) === target);
+    list.innerHTML = items.length ? "" : "家事なし";
+    items.forEach(item => {
+        const row = document.createElement('div');
+        row.className = 'assigned-housework-row';
+        row.style.backgroundColor = getMemberColor(item.name);
+        const text = document.createElement('span');
+        text.textContent = `${item.name}：${item.housework}`;
+        row.appendChild(text);
+        if (item.name === currentUser) {
+            const button = document.createElement('button');
+            button.type = 'button';
+            button.textContent = '完了';
+            button.onclick = () => completeHousework(item.id, row);
+            row.appendChild(button);
+        }
+        list.appendChild(row);
+    });
+}
+
+async function completeHousework(houseworkId, row) {
+    try {
+        const response = await fetch(GAS_WEB_APP_URL, { method: "POST", body: JSON.stringify({ action: "completeHousework", sessionToken, houseworkId }) });
+        const result = await response.json();
+        if (result.status !== 'success') throw new Error(result.message);
+        const item = houseworkAssignments.find(value => value.id === houseworkId);
+        if (item) item.status = '完了';
+        row.classList.add('fade-out');
+        setTimeout(() => {
+            row.remove();
+            renderSelectedDayHousework();
+            renderTodayHousework();
+        }, 450);
+    } catch (error) { alert(error.message || "家事を完了にできませんでした。"); }
+}
+
+function formatLocalDate(date) {
+    return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`;
 }
 
 async function openHouseworkSettings() {

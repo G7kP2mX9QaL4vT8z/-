@@ -15,8 +15,10 @@ function doPost(e) {
       case 'login': return loginCheck(params.familyCode, params.username, params.password);
       case 'getEvents': return getEvents(params.sessionToken);
       case 'addEvent': return addEvent(params.sessionToken, params.date, params.username, params.plan);
+      case 'deleteEvent': return deleteEvent(params.sessionToken, params.eventId);
       case 'getHousework': return getHousework(params.sessionToken);
       case 'addHousework': return addHousework(params.sessionToken, params.date, params.username, params.housework);
+      case 'completeHousework': return completeHousework(params.sessionToken, params.houseworkId);
       case 'getHouseworkTypes': return getHouseworkTypes(params.sessionToken);
       case 'updateHouseworkTypes': return updateHouseworkTypes(params.sessionToken, params.types);
       case 'updateFamilySettings': return updateFamilySettings(params.members, params.sessionToken);
@@ -39,11 +41,11 @@ function createFamily(members) {
     try {
       const calendarSheet = spreadsheet.insertSheet(`${familyCode}-Calendar`);
       createdSheets.push(calendarSheet);
-      calendarSheet.getRange(1, 1, 1, 3).setValues([['日付', '名前', '予定']]);
+      calendarSheet.getRange(1, 1, 1, 4).setValues([['日付', '名前', '予定', 'ID']]);
 
       const houseworkSheet = spreadsheet.insertSheet(`${familyCode}-Housework`);
       createdSheets.push(houseworkSheet);
-      houseworkSheet.getRange(1, 1, 1, 4).setValues([['日付', '名前', '家事', '状態']]);
+      houseworkSheet.getRange(1, 1, 1, 5).setValues([['日付', '名前', '家事', '状態', 'ID']]);
 
       const passwordSheet = spreadsheet.insertSheet(`${familyCode}-Password`);
       createdSheets.push(passwordSheet);
@@ -78,7 +80,7 @@ function migrateLegacyFamily() {
     }
     if (!houseworkSheet) {
       houseworkSheet = spreadsheet.insertSheet('Housework');
-      houseworkSheet.getRange(1, 1, 1, 4).setValues([['日付', '名前', '家事', '状態']]);
+      houseworkSheet.getRange(1, 1, 1, 5).setValues([['日付', '名前', '家事', '状態', 'ID']]);
     }
     const familyCode = generateUniqueFamilyCode();
     calendarSheet.setName(`${familyCode}-Calendar`);
@@ -122,10 +124,11 @@ function loginCheck(familyCode, username, password) {
 function getEvents(sessionToken) {
   const session = getSession(sessionToken);
   const sheet = getFamilySheet(session.familyCode, 'Calendar');
+  ensureRecordIds(sheet, 4, 'ID');
   const data = sheet.getDataRange().getValues();
   const events = [];
   for (let i = 1; i < data.length; i++) {
-    if (data[i][0]) events.push({ date: data[i][0], name: data[i][1], plan: data[i][2] });
+    if (data[i][0]) events.push({ date: data[i][0], name: data[i][1], plan: data[i][2], id: data[i][3] });
   }
   return jsonResponse(events);
 }
@@ -135,16 +138,27 @@ function addEvent(sessionToken, date, username, plan) {
   if (!date || !username || !plan) throw new Error('予定の入力内容が不足しています。');
   const memberNames = getMemberNames(session.familyCode);
   if (!memberNames.includes(username)) throw new Error('指定されたメンバーが見つかりません。');
-  getFamilySheet(session.familyCode, 'Calendar').appendRow([date, username, plan]);
+  getFamilySheet(session.familyCode, 'Calendar').appendRow([date, username, plan, Utilities.getUuid()]);
+  return jsonResponse({ status: 'success' });
+}
+
+function deleteEvent(sessionToken, eventId) {
+  const session = getSession(sessionToken);
+  const sheet = getFamilySheet(session.familyCode, 'Calendar');
+  const row = findRowById(sheet, 4, eventId);
+  if (!row) throw new Error('削除する予定が見つかりません。');
+  sheet.deleteRow(row);
   return jsonResponse({ status: 'success' });
 }
 
 function getHousework(sessionToken) {
   const session = getSession(sessionToken);
-  const data = getFamilySheet(session.familyCode, 'Housework').getDataRange().getValues();
+  const sheet = getFamilySheet(session.familyCode, 'Housework');
+  ensureRecordIds(sheet, 5, 'ID');
+  const data = sheet.getDataRange().getValues();
   const housework = [];
   for (let i = 1; i < data.length; i++) {
-    if (data[i][0]) housework.push({ date: data[i][0], name: data[i][1], housework: data[i][2], status: data[i][3] });
+    if (data[i][0]) housework.push({ date: data[i][0], name: data[i][1], housework: data[i][2], status: data[i][3], id: data[i][4] });
   }
   return jsonResponse(housework);
 }
@@ -155,8 +169,41 @@ function addHousework(sessionToken, date, username, housework) {
   if (!getMemberNames(session.familyCode).includes(username)) throw new Error('指定されたメンバーが見つかりません。');
   const allTypes = Object.values(readHouseworkTypes(session.familyCode)).flat();
   if (!allTypes.includes(housework)) throw new Error('指定された家事が見つかりません。');
-  getFamilySheet(session.familyCode, 'Housework').appendRow([date, username, housework, '未完了']);
+  getFamilySheet(session.familyCode, 'Housework').appendRow([date, username, housework, '未完了', Utilities.getUuid()]);
   return jsonResponse({ status: 'success' });
+}
+
+function completeHousework(sessionToken, houseworkId) {
+  const session = getSession(sessionToken);
+  const sheet = getFamilySheet(session.familyCode, 'Housework');
+  const row = findRowById(sheet, 5, houseworkId);
+  if (!row) throw new Error('対象の家事が見つかりません。');
+  if (String(sheet.getRange(row, 2).getValue()) !== session.username) throw new Error('自分に割り当てられた家事だけ完了できます。');
+  sheet.getRange(row, 4).setValue('完了');
+  return jsonResponse({ status: 'success' });
+}
+
+function ensureRecordIds(sheet, idColumn, header) {
+  sheet.getRange(1, idColumn).setValue(header);
+  const lastRow = sheet.getLastRow();
+  if (lastRow < 2) return;
+  const range = sheet.getRange(2, idColumn, lastRow - 1, 1);
+  const values = range.getValues();
+  let changed = false;
+  values.forEach(row => {
+    if (!row[0]) { row[0] = Utilities.getUuid(); changed = true; }
+  });
+  if (changed) range.setValues(values);
+}
+
+function findRowById(sheet, idColumn, id) {
+  if (!id) return 0;
+  ensureRecordIds(sheet, idColumn, 'ID');
+  const lastRow = sheet.getLastRow();
+  if (lastRow < 2) return 0;
+  const values = sheet.getRange(2, idColumn, lastRow - 1, 1).getValues();
+  const index = values.findIndex(row => String(row[0]) === String(id));
+  return index < 0 ? 0 : index + 2;
 }
 
 function getHouseworkTypes(sessionToken) {
