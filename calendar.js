@@ -1,5 +1,6 @@
-const GAS_WEB_APP_URL = "https://script.google.com/macros/s/AKfycbyoMW1j4vpZMozamkiFIb2QF-MuhOOVrEyNGR6P-LcD3zY--EvFF7rz4YkjCGtPa0XOEA/exec";
+const GAS_WEB_APP_URL = "https://script.google.com/macros/s/AKfycbyrmkr1sDKeu0SGZLVBZMk_JGtCd4ncpA_gUZlVoinsLn_v-yu34D0MoYw69S8a3Nz-Hw/exec";
 let currentUser = localStorage.getItem('family_calendar_user');
+const familyCode = localStorage.getItem('family_calendar_code');
 let currentViewDate = new Date();
 let selectedDateStr = ""; // 選択された日付を保持する変数
 const FAMILY_SETTINGS_KEY = "family_calendar_members";
@@ -14,7 +15,7 @@ const DEFAULT_COLORS = ["#ffb6c1", "#98fb98", "#add8e6", "#fffacd", "#dda0dd", "
 let familyMembers = loadFamilyMembers();
 
 window.onload = async function() {
-    if (!currentUser) {
+    if (!currentUser || !familyCode || !sessionToken) {
         window.location.href = "index.html";
         return;
     }
@@ -25,7 +26,7 @@ window.onload = async function() {
 
 function loadFamilyMembers() {
     try {
-        const saved = JSON.parse(localStorage.getItem(FAMILY_SETTINGS_KEY));
+        const saved = JSON.parse(localStorage.getItem(`${FAMILY_SETTINGS_KEY}_${familyCode}`));
         return Array.isArray(saved) && saved.length ? saved : DEFAULT_MEMBERS.map(member => ({ ...member }));
     } catch (error) {
         return DEFAULT_MEMBERS.map(member => ({ ...member }));
@@ -36,7 +37,7 @@ async function syncFamilyMembers() {
     try {
         const response = await fetch(GAS_WEB_APP_URL, {
             method: "POST",
-            body: JSON.stringify({ action: "getFamilySettings" })
+            body: JSON.stringify({ action: "getFamilySettings", familyCode: familyCode })
         });
         const result = await response.json();
         if (!Array.isArray(result.members) || !result.members.length) return;
@@ -45,7 +46,7 @@ async function syncFamilyMembers() {
             accountName: member.name,
             color: member.color || "#e0e0e0"
         }));
-        localStorage.setItem(FAMILY_SETTINGS_KEY, JSON.stringify(familyMembers));
+        localStorage.setItem(`${FAMILY_SETTINGS_KEY}_${familyCode}`, JSON.stringify(familyMembers));
     } catch (error) {
         console.info("保存済みの家族設定を使用します。");
     }
@@ -139,7 +140,7 @@ async function fetchEvents() {
     try {
         const response = await fetch(GAS_WEB_APP_URL, {
             method: "POST",
-            body: JSON.stringify({ action: "getEvents" })
+            body: JSON.stringify({ action: "getEvents", sessionToken: sessionToken })
         });
         return await response.json();
     } catch (e) { return []; }
@@ -249,7 +250,7 @@ async function saveFamilySettings() {
             currentUser = renamedCurrentUser.name;
             localStorage.setItem('family_calendar_user', currentUser);
         }
-        localStorage.setItem(FAMILY_SETTINGS_KEY, JSON.stringify(familyMembers));
+        localStorage.setItem(`${FAMILY_SETTINGS_KEY}_${familyCode}`, JSON.stringify(familyMembers));
         closeFamilySettings();
         renderMemberList();
         renderCalendar();
@@ -280,7 +281,7 @@ async function submitEvent() {
 
     await fetch(GAS_WEB_APP_URL, {
         method: "POST",
-        body: JSON.stringify({ action: "addEvent", username: member, date: date, plan: plan.trim() })
+        body: JSON.stringify({ action: "addEvent", sessionToken: sessionToken, username: member, date: date, plan: plan.trim() })
     });
     closeAddModal();
     renderCalendar();

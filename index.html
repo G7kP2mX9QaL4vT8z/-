@@ -1,28 +1,14 @@
 <!DOCTYPE html>
 <html lang="ja">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>家族カレンダー - ログイン</title>
-    <link rel="icon" href="calendaricon.png" type="image/png">
-    <link rel="stylesheet" href="style.css">
-</head>
+<head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><title>家族カレンダー - ログイン</title><link rel="icon" href="calendaricon.png" type="image/png"><link rel="stylesheet" href="style.css"></head>
 <body class="login-page">
-    <div class="login-container">
-        <img src="calendaricon.png" alt="icon" class="page-icon">
-        <h1 class="main-title">家族カレンダー</h1>
-        <p class="sub-title">アカウントを選択してログインしてください。</p>
-        
-        <div id="login-member-list" class="member-list"></div>
-
-        <div id="password-section" class="hidden">
-            <h2 id="selected-member-name"></h2>
-            <input type="password" id="password-input" placeholder="パスワードを入力">
-            <button class="primary-button" onclick="login()">ログイン</button>
-            <button class="secondary-button" onclick="hidePasswordInput()">戻る</button>
-        </div>
-    </div>
-
-    <script src="auth.js"></script>
-</body>
-</html>
+<div class="login-container">
+<img src="calendaricon.png" alt="icon" class="page-icon"><h1 class="main-title">家族カレンダー</h1>
+<div id="start-section"><p class="sub-title">家族グループを作成するか、参加してください。</p><button class="primary-button" onclick="openCreateFamily()">家族グループの作成</button><button class="secondary-button login-action-button" onclick="showJoinFamily()">家族グループに参加</button></div>
+<div id="join-code-section" class="hidden"><h2>家族グループに参加</h2><label for="family-code-input" class="form-label">家族コード</label><input type="text" id="family-code-input" class="code-input" maxlength="4" placeholder="AB12" autocomplete="off"><button class="primary-button" onclick="joinFamily()">参加</button><button class="secondary-button" onclick="showStartSection()">戻る</button></div>
+<div id="member-section" class="hidden"><p class="sub-title">自分のアカウントを選択してください。</p><div id="login-member-list" class="member-list"></div><button class="secondary-button" onclick="showJoinFamily()">戻る</button></div>
+<div id="password-section" class="hidden"><h2 id="selected-member-name"></h2><input type="password" id="password-input" placeholder="パスワードを入力"><button class="primary-button" onclick="login()">ログイン</button><button class="secondary-button" onclick="showMemberSection()">戻る</button></div>
+</div>
+<div id="create-family-modal" class="modal hidden"><div class="modal-content settings-modal-content"><h3>家族設定</h3><div class="family-count-row"><label for="create-family-count">家族の人数</label><input type="number" id="create-family-count" min="1" max="10" value="4" onchange="changeCreateFamilyCount()"></div><div class="settings-labels"><span>名前</span><span>パスワード</span><span>色</span></div><div id="create-family-list"></div><button class="primary-button" onclick="createFamily()">作成</button><button class="secondary-button" onclick="closeCreateFamily()">キャンセル</button></div></div>
+<div id="family-code-modal" class="modal hidden"><div class="modal-content"><h3>家族グループを作成しました</h3><p>家族コード</p><div id="created-family-code" class="created-family-code"></div><p class="code-note">参加する家族へこのコードを伝えてください。</p><button class="primary-button" onclick="finishFamilyCreation()">確認</button></div></div>
+<script src="auth.js"></script></body></html>
