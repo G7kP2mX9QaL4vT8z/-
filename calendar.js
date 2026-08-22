@@ -2,14 +2,44 @@ const GAS_WEB_APP_URL = "https://script.google.com/macros/s/AKfycbwErNALMT0pjSzV
 const currentUser = localStorage.getItem('family_calendar_user');
 let currentViewDate = new Date();
 let selectedDateStr = ""; // 選択された日付を保持する変数
+const FAMILY_SETTINGS_KEY = "family_calendar_members";
+const DEFAULT_MEMBERS = [
+    { name: "母", accountName: "母", color: "#ffb6c1" },
+    { name: "父", accountName: "父", color: "#98fb98" },
+    { name: "兄", accountName: "兄", color: "#add8e6" },
+    { name: "妹", accountName: "妹", color: "#fffacd" }
+];
+const DEFAULT_COLORS = ["#ffb6c1", "#98fb98", "#add8e6", "#fffacd", "#dda0dd", "#ffd580"];
+let familyMembers = loadFamilyMembers();
 
 window.onload = function() {
     if (!currentUser) {
         window.location.href = "index.html";
         return;
     }
+    renderMemberList();
     renderCalendar();
 };
+
+function loadFamilyMembers() {
+    try {
+        const saved = JSON.parse(localStorage.getItem(FAMILY_SETTINGS_KEY));
+        return Array.isArray(saved) && saved.length ? saved : DEFAULT_MEMBERS.map(member => ({ ...member }));
+    } catch (error) {
+        return DEFAULT_MEMBERS.map(member => ({ ...member }));
+    }
+}
+
+function renderMemberList() {
+    const list = document.getElementById('member-list');
+    list.innerHTML = "";
+    familyMembers.forEach(member => {
+        const item = document.createElement('li');
+        item.textContent = member.name;
+        item.style.backgroundColor = member.color;
+        list.appendChild(item);
+    });
+}
 
 // カレンダーの描画
 async function renderCalendar() {
@@ -72,7 +102,8 @@ async function renderCalendar() {
 
         dayEvents.forEach(e => {
             const label = document.createElement('span');
-            label.className = `event-label ${getMemberColorClass(e.name)}`;
+            label.className = 'event-label';
+            label.style.backgroundColor = getMemberColor(e.name);
             label.textContent = e.plan;
             cell.appendChild(label);
         });
@@ -93,9 +124,9 @@ async function fetchEvents() {
     } catch (e) { return []; }
 }
 
-function getMemberColorClass(name) {
-    const map = { '母': 'color-mama', '父': 'color-papa', '兄': 'color-brother', '妹': 'color-sister' };
-    return map[name] || "";
+function getMemberColor(name) {
+    const member = familyMembers.find(item => item.name === name || item.accountName === name);
+    return member ? member.color : "#e0e0e0";
 }
 
 function changeMonth(diff) {
@@ -118,6 +149,71 @@ function openAddModal() {
 function closeAddModal() {
     document.getElementById('add-modal').classList.add('hidden');
     document.getElementById('event-plan').value = "";
+}
+
+function openFamilySettings() {
+    document.getElementById('family-count').value = familyMembers.length;
+    renderFamilySettingsRows(familyMembers);
+    document.getElementById('family-settings-modal').classList.remove('hidden');
+}
+
+function closeFamilySettings() {
+    document.getElementById('family-settings-modal').classList.add('hidden');
+}
+
+function changeFamilyCount() {
+    const input = document.getElementById('family-count');
+    const count = Math.max(1, Math.min(10, Number(input.value) || 1));
+    input.value = count;
+    const current = readFamilySettingsRows();
+    while (current.length < count) {
+        const index = current.length;
+        current.push({ name: `メンバー${index + 1}`, accountName: `メンバー${index + 1}`, color: DEFAULT_COLORS[index % DEFAULT_COLORS.length] });
+    }
+    renderFamilySettingsRows(current.slice(0, count));
+}
+
+function renderFamilySettingsRows(members) {
+    const list = document.getElementById('family-settings-list');
+    list.innerHTML = "";
+    members.forEach(member => {
+        const row = document.createElement('div');
+        row.className = 'family-setting-row';
+        row.dataset.accountName = member.accountName || member.name;
+        row.innerHTML = `<input type="text" class="family-name-input" maxlength="20" value="${escapeHtml(member.name)}" aria-label="メンバー名"><input type="color" class="family-color-input" value="${member.color}" aria-label="メンバーの色">`;
+        list.appendChild(row);
+    });
+}
+
+function readFamilySettingsRows() {
+    return Array.from(document.querySelectorAll('.family-setting-row')).map(row => ({
+        name: row.querySelector('.family-name-input').value.trim(),
+        accountName: row.dataset.accountName,
+        color: row.querySelector('.family-color-input').value
+    }));
+}
+
+function saveFamilySettings() {
+    const members = readFamilySettingsRows();
+    if (members.some(member => !member.name)) {
+        alert("すべてのメンバーの名前を入力してください。");
+        return;
+    }
+    if (new Set(members.map(member => member.name)).size !== members.length) {
+        alert("メンバー名は重複しないようにしてください。");
+        return;
+    }
+    familyMembers = members;
+    localStorage.setItem(FAMILY_SETTINGS_KEY, JSON.stringify(familyMembers));
+    closeFamilySettings();
+    renderMemberList();
+    renderCalendar();
+}
+
+function escapeHtml(value) {
+    return value.replace(/[&<>'"]/g, character => ({
+        '&': '&amp;', '<': '&lt;', '>': '&gt;', "'": '&#39;', '"': '&quot;'
+    })[character]);
 }
 
 async function submitEvent() {
